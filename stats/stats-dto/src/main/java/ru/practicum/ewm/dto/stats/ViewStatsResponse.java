@@ -2,13 +2,17 @@ package ru.practicum.ewm.dto.stats;
 
 import lombok.*;
 
+import java.io.Serializable;
+
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder(toBuilder = true)
-public class ViewStatsResponse {
+@ToString
+@EqualsAndHashCode
+public class ViewStatsResponse implements Serializable {
     private String app; // Название сервиса
     private String uri; //URI сервиса
-    private Integer hits; // Количество просмотров
+    private Long hits; // Количество просмотров
 }

@@ -12,7 +12,7 @@ import java.time.format.DateTimeFormatter;
 public class Mapper {
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-    public Stats endpoitHitToStats(EndpointHit endpointHit){
+    public Stats endpointHitToStats(EndpointHit endpointHit) {
         Stats stats = new Stats();
         stats.setApp(endpointHit.getApp());
         stats.setUri(endpointHit.getUri());
@@ -21,12 +21,11 @@ public class Mapper {
         return stats;
     }
 
-    public ViewStatsResponse statToViewStatsResponse(Stats stat, Integer hits){
+    public ViewStatsResponse statToViewStatsResponse(Stats stat, Long hits) {
         ViewStatsResponse viewStatsResponse = new ViewStatsResponse();
         viewStatsResponse.setApp(stat.getApp());
         viewStatsResponse.setUri(stat.getUri());
         viewStatsResponse.setHits(hits);
-        return  viewStatsResponse;
+        return viewStatsResponse;
     }
-
 }

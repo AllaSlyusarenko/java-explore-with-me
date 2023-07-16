@@ -3,7 +3,6 @@ package ru.practicum.ewm.stats.repository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
-import ru.practicum.ewm.dto.stats.ViewStatsRequest;
 import ru.practicum.ewm.dto.stats.ViewStatsResponse;
 import ru.practicum.ewm.stats.model.Stats;
 
@@ -12,25 +11,33 @@ import java.util.List;
 
 @Repository
 public interface StatsRepository extends JpaRepository<Stats, Long> {
+    @Query("SELECT new ru.practicum.ewm.dto.stats.ViewStatsResponse(s.app, s.uri, COUNT(DISTINCT s.ip)) " +
+            "FROM Stats AS s " +
+            "WHERE s.created BETWEEN ?1 AND ?2 " +
+            "GROUP BY s.app, s.uri " +
+            "ORDER BY COUNT(DISTINCT s.ip) DESC")
+    List<ViewStatsResponse> getAllStatsUniqueIpWithoutUris(LocalDateTime start, LocalDateTime end);
 
-    //    public default List<ViewStatsResponse> getViews(ViewStatsRequest viewStatsRequest){
-//        return List.of();
-//    }
-    public List<Stats> findAllByUriInAndCreatedBetween(List<String> uris, LocalDateTime start, LocalDateTime end);
+    @Query("SELECT new ru.practicum.ewm.dto.stats.ViewStatsResponse(s.app, s.uri, COUNT(s.ip)) " +
+            "FROM Stats AS s " +
+            "WHERE s.created BETWEEN ?1 AND ?2 " +
+            "GROUP BY s.app, s.uri " +
+            "ORDER BY COUNT(s.ip) DESC")
+    List<ViewStatsResponse> getAllStatsWithoutUris(LocalDateTime start, LocalDateTime end);
 
-    public long countByUri(String uri);
-    public long countDistinctByUriAndIp(String uri, String ip);
+    @Query("SELECT new ru.practicum.ewm.dto.stats.ViewStatsResponse(s.app, s.uri, COUNT(DISTINCT s.ip)) " +
+            "FROM Stats AS s " +
+            "WHERE s.created BETWEEN ?1 AND ?2 " +
+            "AND s.uri IN (?3) " +
+            "GROUP BY s.app, s.uri " +
+            "ORDER BY COUNT(DISTINCT s.ip) DESC")
+    List<ViewStatsResponse> getAllStatsUniqueIpWithUris(LocalDateTime start, LocalDateTime end, List<String> uris);
 
-    public List<Stats> findAllByCreatedBetween(LocalDateTime start, LocalDateTime end);
-
-    public List<Stats> findDistinctStatsByUriInAndCreatedBetween(List<String> uris, LocalDateTime start, LocalDateTime end);
-    public List<Stats> findStatsDistinctByUriAndIp(String uri, String ip);
-
-    @Query("SELECT COUNT (ip) FROM Stats " +
-            "WHERE uri = ?1")
-    Integer findHitCountByUri(String uri);
-
-    @Query("SELECT COUNT (DISTINCT ip) FROM Stats " +
-            "WHERE uri = ?1")
-    Integer findHitCountByUriWithUniqueIp(String uri);
+    @Query("SELECT new ru.practicum.ewm.dto.stats.ViewStatsResponse(s.app, s.uri, COUNT(s.ip)) " +
+            "FROM Stats AS s " +
+            "WHERE s.created BETWEEN ?1 AND ?2 " +
+            "AND s.uri IN (?3) " +
+            "GROUP BY s.app, s.uri " +
+            "ORDER BY COUNT(s.ip) DESC")
+    List<ViewStatsResponse> getAllStatsWithUris(LocalDateTime start, LocalDateTime end, List<String> uris);
 }

@@ -11,6 +11,4 @@ public interface StatsService {
     public void saveHit(EndpointHit endpointHit);
 
     public List<ViewStatsResponse> getViews(LocalDateTime start, LocalDateTime end, List<String> uris, Boolean unique);
-
-    public List<Stats> getAll();
 }

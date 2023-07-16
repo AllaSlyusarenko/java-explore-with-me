@@ -9,7 +9,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.ewm.dto.stats.EndpointHit;
 import ru.practicum.ewm.dto.stats.ViewStatsResponse;
-import ru.practicum.ewm.stats.model.Stats;
 import ru.practicum.ewm.stats.service.StatsService;
 
 import javax.validation.Valid;
@@ -50,10 +49,4 @@ public class StatsController {
         List<ViewStatsResponse> results = statsService.getViews(startDate, endDate, uris, unique);
         return ResponseEntity.ok(results);
     }
-
-    @GetMapping("/all")
-    public List<Stats> getStats() {
-        return statsService.getAll();
-    }
-
 }

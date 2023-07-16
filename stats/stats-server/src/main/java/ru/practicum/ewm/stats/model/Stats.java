@@ -18,16 +18,15 @@ public class Stats {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "name_app")
+    @Column(name = "app")
     private String app;
 
     @Column(name = "uri")
     private String uri;
 
-    @Column(name = "ip_user")
+    @Column(name = "ip")
     private String ip;
 
-    @Column(name = "created_date")
+    @Column(name = "created")
     private LocalDateTime created;
-
 }

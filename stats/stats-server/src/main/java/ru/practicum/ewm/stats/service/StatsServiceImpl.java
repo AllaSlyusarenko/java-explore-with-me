@@ -1,6 +1,7 @@
 package ru.practicum.ewm.stats.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.ewm.dto.stats.EndpointHit;
@@ -10,59 +11,40 @@ import ru.practicum.ewm.stats.model.Stats;
 import ru.practicum.ewm.stats.repository.StatsRepository;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
+import java.util.*;
 
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
+@Slf4j
 public class StatsServiceImpl implements StatsService {
     private final StatsRepository statsRepository;
 
     @Override
     @Transactional
     public void saveHit(EndpointHit endpointHit) {
-        statsRepository.save(Mapper.endpoitHitToStats(endpointHit));
+        statsRepository.save(Mapper.endpointHitToStats(endpointHit));
     }
 
     @Override
     public List<ViewStatsResponse> getViews(LocalDateTime start, LocalDateTime end, List<String> uris, Boolean unique) {
         List<Stats> results;
-        if (uris == null) {
-            results = statsRepository.findAllByCreatedBetween(start, end);
-        } else {
-            results = statsRepository.findAllByUriInAndCreatedBetween(uris, start, end);
+        if (uris == null || uris.isEmpty()) {
             if (unique) {
-                results = results.stream()
-                        .filter(distinctByKey(Stats::getUri))
-                        .filter(distinctByKey(Stats::getIp))
-                        .collect(Collectors.toList());
-            }
-        }
-        List<ViewStatsResponse> responses = new ArrayList<>();
-        for (Stats stat : results) {
-            Integer hits;
-            if(unique){
-                hits = statsRepository.findHitCountByUriWithUniqueIp(stat.getUri());
+                log.info("Cтатистика запросов по uris ={} для уникальных ip", uris);
+                return statsRepository.getAllStatsUniqueIpWithoutUris(start, end);
             } else {
-                hits = statsRepository.findHitCountByUri(stat.getUri());
+                log.info("Cтатистика запросов по uris ={} для неуникальных ip", uris);
+                return statsRepository.getAllStatsWithoutUris(start, end);
             }
-            responses.add(Mapper.statToViewStatsResponse(stat, hits));
+        } else {
+            if (unique) {
+                log.info("Статистика запросов по uris ={} для уникальных ip", uris);
+                return statsRepository.getAllStatsUniqueIpWithUris(start, end, uris);
+            } else {
+                log.info("Статистика запросов по uris ={} для неуникальных ip", uris);
+                return statsRepository.getAllStatsWithUris(start, end, uris);
+            }
         }
-        return responses;
-    }
-
-    @Override
-    public List<Stats> getAll() {
-        return statsRepository.findAll();
-    }
-    private static <T> Predicate<T> distinctByKey(Function<? super T, ?> keyExtractor) {
-        Set<Object> seen = new HashSet<>();
-        return t -> seen.add(keyExtractor.apply(t));
     }
 }
