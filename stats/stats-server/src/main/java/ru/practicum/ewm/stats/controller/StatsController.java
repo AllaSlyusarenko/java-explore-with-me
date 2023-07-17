@@ -30,6 +30,7 @@ public class StatsController {
     @PostMapping("/hit")
     @ResponseStatus(code = HttpStatus.CREATED)
     public void saveHit(@Valid @RequestBody EndpointHit endpointHit) {
+        log.info("Сохранение данных для статистики {}", endpointHit);
         statsService.saveHit(endpointHit);
     }
 
@@ -38,6 +39,8 @@ public class StatsController {
                                                             @RequestParam @NotNull String end,
                                                             @RequestParam(required = false) List<String> uris,
                                                             @RequestParam(defaultValue = "false") Boolean unique) {
+        log.info("Получение данных для статистики по параметрам: start = {}, end = {}, uris = {}, unique = {}",
+                start, end, uris, unique);
         LocalDateTime startDate;
         LocalDateTime endDate;
         try {

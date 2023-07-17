@@ -2,7 +2,6 @@ package ru.practicum.ewm.stats.mapper;
 
 import lombok.experimental.UtilityClass;
 import ru.practicum.ewm.dto.stats.EndpointHit;
-import ru.practicum.ewm.dto.stats.ViewStatsResponse;
 import ru.practicum.ewm.stats.model.Stats;
 
 import java.time.LocalDateTime;
@@ -19,13 +18,5 @@ public class Mapper {
         stats.setIp(endpointHit.getIp());
         stats.setCreated(LocalDateTime.parse(endpointHit.getTimestamp(), formatter));
         return stats;
-    }
-
-    public ViewStatsResponse statToViewStatsResponse(Stats stat, Long hits) {
-        ViewStatsResponse viewStatsResponse = new ViewStatsResponse();
-        viewStatsResponse.setApp(stat.getApp());
-        viewStatsResponse.setUri(stat.getUri());
-        viewStatsResponse.setHits(hits);
-        return viewStatsResponse;
     }
 }

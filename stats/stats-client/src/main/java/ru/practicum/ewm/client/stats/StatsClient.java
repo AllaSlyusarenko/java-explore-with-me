@@ -89,6 +89,6 @@ public class StatsClient extends BaseClient {
         for (String uri : uris) {
             pathBuilder.append("&uris=").append(uri);
         }
-        return get(pathBuilder.toString() + "&unique={unique}", parameters);
+        return get(pathBuilder + "&unique={unique}", parameters);
     }
 }
