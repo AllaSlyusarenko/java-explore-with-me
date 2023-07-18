@@ -1,5 +1,6 @@
 package ru.practicum.ewm.client.stats;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -14,12 +15,16 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @Service
 public class StatsClient extends BaseClient {
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private static final String URL_SERVER = "http://localhost:9090";
+    private static final String HIT_PREFIX = "/hit";
+    private static final String STATS_PREFIX = "/stats";
 
     @Autowired
-    public StatsClient(@Value("http://localhost:9090") String serverUrl, RestTemplateBuilder builder) {
+    public StatsClient(@Value(URL_SERVER) String serverUrl, RestTemplateBuilder builder) {
         super(
                 builder
                         .uriTemplateHandler(new DefaultUriBuilderFactory(serverUrl))
@@ -29,16 +34,20 @@ public class StatsClient extends BaseClient {
     }
 
     public ResponseEntity<Object> saveHit(String appName, String uri, String ip, String timestamp) {
+        log.info("Сохранение информации о запросе: appName = {}, uri = {}, ip = {}, timestamp = {}",
+                appName, uri, ip, timestamp);
         EndpointHit endpointHit = EndpointHit.builder()
                 .app(appName)
                 .uri(uri)
                 .ip(ip)
                 .timestamp(timestamp)
                 .build();
-        return post("/hit", endpointHit);
+        return post(HIT_PREFIX, endpointHit);
     }
 
-    public ResponseEntity<Object> getStats(LocalDateTime start, LocalDateTime end) { //нет uris, неуникальные ip
+    public ResponseEntity<Object> getStats(LocalDateTime start, LocalDateTime end, List<String> uris, Boolean unique) {
+        log.info("Получение статистики по параметрам: start = {}, end = {}, uris = {}, unique = {}",
+                start, end, uris, unique);
         if (start == null || end == null || start.isAfter(end)) {
             throw new IllegalArgumentException("Ошибка в указании времени начала и конца");
         }
@@ -46,49 +55,13 @@ public class StatsClient extends BaseClient {
                 "start", start.format(formatter),
                 "end", end.format(formatter)
         );
-        return get("/stats?start={start}&end={end}", parameters);
-    }
-
-    public ResponseEntity<Object> getStats(LocalDateTime start, LocalDateTime end, Boolean unique) { //нет uris, уникальные ip
-        if (start == null || end == null || start.isAfter(end)) {
-            throw new IllegalArgumentException("Ошибка в указании времени начала и конца");
+        StringBuilder pathBuilder = new StringBuilder(STATS_PREFIX + "?start={start}&end={end}");
+        if (uris != null && !uris.isEmpty()) {
+            for (String uri : uris) {
+                pathBuilder.append("&uris=").append(uri);
+            }
         }
-        Map<String, Object> parameters = Map.of(
-                "start", start.format(formatter),
-                "end", end.format(formatter),
-                "unique", unique
-        );
-        return get("/stats?start={start}&end={end}&unique={unique}", parameters);
-    }
-
-    public ResponseEntity<Object> getStats(LocalDateTime start, LocalDateTime end, List<String> uris) { //есть uris, неуникальные ip
-        if (start == null || end == null || start.isAfter(end)) {
-            throw new IllegalArgumentException("Ошибка в указании времени начала и конца");
-        }
-        Map<String, Object> parameters = Map.of(
-                "start", start.format(formatter),
-                "end", end.format(formatter)
-        );
-        StringBuilder pathBuilder = new StringBuilder("/stats?start={start}&end={end}");
-        for (String uri : uris) {
-            pathBuilder.append("&uris=").append(uri);
-        }
+        pathBuilder.append("&unique=").append(unique);
         return get(pathBuilder.toString(), parameters);
-    }
-
-    public ResponseEntity<Object> getStats(LocalDateTime start, LocalDateTime end, List<String> uris, Boolean unique) { //есть uris, уникальные ip
-        if (start == null || end == null || start.isAfter(end)) {
-            throw new IllegalArgumentException("Ошибка в указании времени начала и конца");
-        }
-        Map<String, Object> parameters = Map.of(
-                "start", start.format(formatter),
-                "end", end.format(formatter),
-                "unique", unique
-        );
-        StringBuilder pathBuilder = new StringBuilder("/stats?start={start}&end={end}");
-        for (String uri : uris) {
-            pathBuilder.append("&uris=").append(uri);
-        }
-        return get(pathBuilder + "&unique={unique}", parameters);
     }
 }
