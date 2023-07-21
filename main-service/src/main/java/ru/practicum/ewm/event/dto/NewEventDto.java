@@ -1,31 +1,38 @@
 package ru.practicum.ewm.event.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
-import ru.practicum.ewm.event.model.Location;
+import org.springframework.lang.Nullable;
+import ru.practicum.ewm.utility.Constants;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
+import javax.validation.constraints.*;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString
 @Builder(toBuilder = true)
-public class EventRequestDto {
+public class NewEventDto {
     @NotBlank
     @Size(min = 20, max = 2000)
     private String annotation;
-    @NotNull
-    private Long categoryId;//id категории к которой относится событие
+    @PositiveOrZero
+    private Long category;//id категории к которой относится событие
     @NotBlank
     @Size(min = 20, max = 7000)
     private String description;
+
     @NotNull
-    private String eventDate; //Дата и время, на которые намечено событие (в формате "yyyy-MM-dd HH:mm:ss")
+    @Future
+    @JsonFormat(pattern = Constants.DATE_PATTERN_FULL)
+    private LocalDateTime eventDate; //Дата и время, на которые намечено событие (в формате "yyyy-MM-dd HH:mm:ss")
+    //Обратите внимание: дата и время на которые намечено событие не может быть раньше, чем через два часа от текущего момента
     @NotNull
-    private Location location;
+    private LocationDto location;
     private Boolean paid; //надо ли платить default: false
+    @PositiveOrZero
     private Integer participantLimit; //Ограничение на количество участников. Значение 0 - означает отсутствие ограничения
     private Boolean requestModeration; //Нужна ли пре-модерация заявок на участие.
     // Если true, то все заявки будут ожидать подтверждения инициатором события. Если false - то будут подтверждаться автоматически.
