@@ -7,6 +7,7 @@ import ru.practicum.ewm.event.dto.NewEventDto;
 import ru.practicum.ewm.event.model.Event;
 import ru.practicum.ewm.event.model.Location;
 import ru.practicum.ewm.user.model.User;
+import ru.practicum.ewm.utility.Constants;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -21,7 +22,7 @@ public class EventMapper {
 //        event.setConfirmedRequests(newEventDto.getParticipantLimit());
         event.setCreatedOn(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS));
         event.setDescription(newEventDto.getDescription());
-        event.setEventDate(newEventDto.getEventDate());
+        event.setEventDate(LocalDateTime.parse(newEventDto.getEventDate(), Constants.formatterDate));
         event.setInitiator(user);
         event.setLocation(location);
         event.setPaid(newEventDto.getPaid());

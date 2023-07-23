@@ -21,15 +21,16 @@ public class EventFullDto { //Response
     private String annotation;
     private Category category;
     private Integer confirmedRequests; //Количество одобренных заявок на участие в данном событии
-    @JsonFormat(pattern = Constants.DATE_PATTERN_FULL)
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdOn; //Дата и время создания события (в формате "yyyy-MM-dd HH:mm:ss")
     private String description;
-    @JsonFormat(pattern = Constants.DATE_PATTERN_FULL)
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime eventDate; //Дата и время, на которые намечено событие (в формате "yyyy-MM-dd HH:mm:ss")
     private User initiator;
     private Location location;
     private Boolean paid; //надо ли платить
     private Integer participantLimit; //Ограничение на количество участников. Значение 0 - означает отсутствие ограничения
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime publishedOn; //Дата и время публикации события (в формате "yyyy-MM-dd HH:mm:ss")
     private Boolean requestModeration; //Нужна ли пре-модерация заявок на участие
     private EventState state; //enum

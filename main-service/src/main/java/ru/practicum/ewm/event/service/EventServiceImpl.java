@@ -19,6 +19,7 @@ import ru.practicum.ewm.exception.ConflictException;
 import ru.practicum.ewm.exception.NotFoundException;
 import ru.practicum.ewm.user.model.User;
 import ru.practicum.ewm.user.repository.UserRepository;
+import ru.practicum.ewm.utility.Constants;
 
 import java.time.LocalDateTime;
 
@@ -35,7 +36,8 @@ public class EventServiceImpl implements EventService {
     @Override
     @Transactional
     public EventFullDto saveEvent(Long userId, NewEventDto newEventDto) {
-        if (newEventDto.getEventDate() != null && newEventDto.getEventDate().isBefore(LocalDateTime.now())) {
+        if (LocalDateTime.parse(newEventDto.getEventDate(), Constants.formatterDate) != null
+                && LocalDateTime.parse(newEventDto.getEventDate(), Constants.formatterDate).isBefore(LocalDateTime.now())) {
             throw new ConflictException("Указана неверная дата");
         }
         User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("Пользователь не найден"));
