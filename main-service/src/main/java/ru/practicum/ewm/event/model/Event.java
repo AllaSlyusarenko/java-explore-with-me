@@ -1,14 +1,20 @@
 package ru.practicum.ewm.event.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.*;
 import ru.practicum.ewm.category.model.Category;
 import ru.practicum.ewm.event.dto.EventState;
+import ru.practicum.ewm.request.dto.RequestStatus;
+import ru.practicum.ewm.request.model.Request;
 import ru.practicum.ewm.user.model.User;
 import ru.practicum.ewm.utility.Constants;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "events")
@@ -17,6 +23,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
+@EqualsAndHashCode
 @Builder(toBuilder = true)
 public class Event {
     @Id
@@ -30,6 +37,9 @@ public class Event {
     @JoinColumn(name = "category_id")
     private Category category;
 
+    @OneToMany(mappedBy = "event", fetch = FetchType.LAZY)
+    @JsonManagedReference
+    private Collection<Request> requests;
 //    @JoinColumn(name ="requests_id")
 //    @OneToMany
 //    private List<ParticipationRequest> requests;
@@ -47,7 +57,7 @@ public class Event {
     @JsonFormat(pattern = Constants.DATE_PATTERN_FULL)
     private LocalDateTime eventDate; //Дата и время, на которые намечено событие (в формате "yyyy-MM-dd HH:mm:ss")
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "initiator_id")
     private User initiator;
 
@@ -74,4 +84,13 @@ public class Event {
 
     @JoinColumn(name = "title")
     private String title; //Заголовок
+
+    public Collection<Request> getConfirmedRequests() {
+        if (this.getRequests() == null) {
+            return new ArrayList<>();
+        }
+        return this.getRequests().stream()
+                .filter((request) -> request.getStatus() == RequestStatus.APPROVED)
+                .collect(Collectors.toUnmodifiableList());
+    }
 }

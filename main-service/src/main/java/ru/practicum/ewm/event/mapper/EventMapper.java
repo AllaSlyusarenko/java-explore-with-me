@@ -1,17 +1,25 @@
 package ru.practicum.ewm.event.mapper;
 
 import lombok.experimental.UtilityClass;
+import ru.practicum.ewm.category.mapper.CategoryMapper;
 import ru.practicum.ewm.category.model.Category;
 import ru.practicum.ewm.event.dto.EventFullDto;
+import ru.practicum.ewm.event.dto.EventShortDto;
 import ru.practicum.ewm.event.dto.NewEventDto;
 import ru.practicum.ewm.event.model.Event;
 import ru.practicum.ewm.event.model.Location;
+import ru.practicum.ewm.request.model.Request;
+import ru.practicum.ewm.user.dto.UserResponseDto;
+import ru.practicum.ewm.user.mapper.UserMapper;
 import ru.practicum.ewm.user.model.User;
 import ru.practicum.ewm.utility.Constants;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @UtilityClass
 public class EventMapper {
@@ -51,5 +59,22 @@ public class EventMapper {
         eventFullDto.setTitle(event.getTitle());
         eventFullDto.setViews(Objects.requireNonNullElse(views, 0));
         return eventFullDto;
+    }
+
+    public EventShortDto eventToEventShortDto(Event event, Long views) {
+        EventShortDto eventShortDto = new EventShortDto();
+        eventShortDto.setId(event.getId());
+        eventShortDto.setAnnotation(event.getAnnotation());
+        eventShortDto.setCategory(CategoryMapper.categoryToCategoryResponseDto(event.getCategory()));
+        eventShortDto.setConfirmedRequests(Long.valueOf(event.getConfirmedRequests().size()));
+        eventShortDto.setEventDate(event.getEventDate());
+        eventShortDto.setInitiator(UserMapper.userToUserShortDto(event.getInitiator()));
+        eventShortDto.setPaid(event.getPaid());
+        eventShortDto.setTitle(event.getTitle());
+        eventShortDto.setViews(views == null ? 0 : views);
+        return eventShortDto;
+    }
+    public List<EventShortDto> eventsToEventShortDto(List<Event> events){
+        return events.stream().map(x -> eventToEventShortDto(x,0L)).collect(Collectors.toList());
     }
 }

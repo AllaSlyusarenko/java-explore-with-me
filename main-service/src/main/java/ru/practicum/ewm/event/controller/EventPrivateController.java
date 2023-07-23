@@ -7,10 +7,14 @@ import org.springframework.http.MediaType;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.ewm.event.dto.EventFullDto;
+import ru.practicum.ewm.event.dto.EventShortDto;
 import ru.practicum.ewm.event.dto.NewEventDto;
 import ru.practicum.ewm.event.service.EventService;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
+import java.util.List;
 
 
 @Slf4j
@@ -27,5 +31,14 @@ public class EventPrivateController {
                                   @Valid @RequestBody NewEventDto newEventDto) {
         log.debug("Создание события: {}", newEventDto);
         return eventService.saveEvent(userId, newEventDto);
+    }
+
+    @GetMapping
+    @ResponseStatus(HttpStatus.OK)
+    public List<EventShortDto> getEventsByUserId(@PathVariable(value = "userId") Long userId,
+                                                 @RequestParam(value = "from", defaultValue = "0") @PositiveOrZero Integer from,
+                                                 @RequestParam(value = "size", defaultValue = "10") @Positive Integer size) {
+        log.debug("Получение событий для: {}", userId);
+        return eventService.getEventsByUserId(userId, from, size);
     }
 }

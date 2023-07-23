@@ -1,12 +1,9 @@
 package ru.practicum.ewm.event.dto;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
 import org.springframework.lang.Nullable;
-import ru.practicum.ewm.utility.Constants;
 
 import javax.validation.constraints.*;
-import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -28,9 +25,11 @@ public class NewEventDto {
     //Обратите внимание: дата и время на которые намечено событие не может быть раньше, чем через два часа от текущего момента
     @NotNull
     private LocationDto location;
+    @Nullable
     private Boolean paid; //надо ли платить default: false
-    @PositiveOrZero
+    @Nullable
     private Integer participantLimit; //Ограничение на количество участников. Значение 0 - означает отсутствие ограничения
+    @Nullable
     private Boolean requestModeration; //Нужна ли пре-модерация заявок на участие.
     // Если true, то все заявки будут ожидать подтверждения инициатором события. Если false - то будут подтверждаться автоматически.
     @NotBlank
