@@ -85,6 +85,8 @@ public class Event {
     @JoinColumn(name = "title")
     private String title; //Заголовок
 
+    private Integer views;
+
     public Collection<Request> getConfirmedRequests() {
         if (this.getRequests() == null) {
             return new ArrayList<>();

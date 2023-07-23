@@ -22,7 +22,7 @@ public class EventShortDto { //Respose short
     private UserShortDto initiator;
     private Boolean paid; //надо ли платить
     private String title; //Заголовок
-    private Long views; //Количество просмотрев события
+    private Integer views; //Количество просмотрев события
 }
 
 //        List[
