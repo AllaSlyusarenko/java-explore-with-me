@@ -26,11 +26,11 @@ public class NewEventDto {
     @NotNull
     private LocationDto location;
     @Nullable
-    private Boolean paid; //надо ли платить default: false
+    private Boolean paid = false; //надо ли платить default: false
     @Nullable
-    private Integer participantLimit; //Ограничение на количество участников. Значение 0 - означает отсутствие ограничения
+    private Integer participantLimit = 0; //Ограничение на количество участников. Значение 0 - означает отсутствие ограничения
     @Nullable
-    private Boolean requestModeration; //Нужна ли пре-модерация заявок на участие.
+    private Boolean requestModeration = true; //Нужна ли пре-модерация заявок на участие.
     // Если true, то все заявки будут ожидать подтверждения инициатором события. Если false - то будут подтверждаться автоматически.
     @NotBlank
     @Size(min = 3, max = 120)

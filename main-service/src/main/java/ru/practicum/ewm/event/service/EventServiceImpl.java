@@ -35,6 +35,12 @@ import ru.practicum.ewm.exception.ConflictException;
 import ru.practicum.ewm.exception.NotFoundException;
 
 import ru.practicum.ewm.exception.ValidationException;
+import ru.practicum.ewm.request.dto.EventRequestStatusUpdateRequest;
+import ru.practicum.ewm.request.dto.EventRequestStatusUpdateResult;
+import ru.practicum.ewm.request.dto.ParticipationResponseDto;
+import ru.practicum.ewm.request.dto.ParticipationStatus;
+import ru.practicum.ewm.request.mapper.ParticipationMapper;
+import ru.practicum.ewm.request.model.Participation;
 import ru.practicum.ewm.request.repository.RequestRepository;
 import ru.practicum.ewm.user.model.User;
 import ru.practicum.ewm.user.repository.UserRepository;
@@ -153,6 +159,73 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
+    @Transactional
+    public ParticipationResponseDto saveRequest(Long userId, Long eventId) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("Пользователь не найден"));
+        Event event = eventRepository.findById(eventId).orElseThrow(() -> new NotFoundException("Событие не найдено"));
+
+        checkEventRequestConstraints(user, event);
+        ParticipationStatus status;
+        if (!event.getRequestModeration() || event.getParticipantLimit().equals(0)) {
+            status = ParticipationStatus.CONFIRMED;
+        } else {
+            status = ParticipationStatus.PENDING;
+        }
+        Participation participation = Participation.builder()
+                .created(LocalDateTime.now())
+                .event(event)
+                .requester(user)
+                .status(status)
+                .build();
+        Participation participationSave = requestRepository.save(participation);
+        return ParticipationMapper.toParticipationResponseDto(participationSave);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ParticipationResponseDto> getRequestByOtherUserEvents(Long userId) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("Пользователь не найден"));
+        List<Participation> participations = requestRepository.findAllByRequester(user);
+        return participations.stream().map(ParticipationMapper::toParticipationResponseDto).collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional
+    public ParticipationResponseDto cancelRequestByUser(Long userId, Long requestId) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("Пользователь не найден"));
+        Participation participation = requestRepository.findByIdAndRequester_Id(requestId, userId);
+        if (participation == null) {
+            throw new NotFoundException("Событие не найдено");
+        }
+        participation.setStatus(ParticipationStatus.CANCELED);
+        Participation participationSave = requestRepository.save(participation);
+        return ParticipationMapper.toParticipationResponseDto(participationSave);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ParticipationResponseDto> getRequestsByUserEvent(Long userId, Long eventId) {
+        Event event = eventRepository.findByIdAndInitiator_Id(eventId, userId);
+        if (event == null) {
+            throw new NotFoundException("Событие не найдено");
+        }
+        List<Participation> participations = requestRepository.findAllByEvent_Id(eventId);
+        return participations.stream().map(ParticipationMapper::toParticipationResponseDto).collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional
+    public EventRequestStatusUpdateResult updateRequestStatusByUserEvent(Long userId, Long eventId, EventRequestStatusUpdateRequest eventRequestStatusUpdateRequest) {
+        Event event = eventRepository.findByIdAndInitiator_Id(eventId, userId);
+        if (event == null) {
+            throw new NotFoundException("Событие не найдено");
+        }
+
+
+        return null;
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public List<EventShortDto> getEventsByUserId(Long userId, Integer from, Integer size) {
         User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("Пользователь не найден"));
@@ -174,7 +247,7 @@ public class EventServiceImpl implements EventService {
     public EventFullDto updateEventByUserIdEventId(Long userId, Long eventId, UpdateEventUserRequest updateEventUserRequest) {
         User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("Пользователь не найден"));
         Event event = eventRepository.findById(eventId).orElseThrow(() -> new NotFoundException("Событие не найдено"));
-        if (event.getState().equals(EventState.PENDING) && event.getState().equals(EventState.CANCELED)) {
+        if (event.getState() == EventState.PUBLISHED) {
             throw new ConflictException("Параметры не удовлетворяют правилам редактирования события");
         }
         if (!event.getInitiator().getId().equals(userId)) {
@@ -223,10 +296,9 @@ public class EventServiceImpl implements EventService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<EventFullDto> getAllEventsAdmin(List<Long> users, EventState states, List<Long> categories,
-                                                LocalDateTime rangeStart, LocalDateTime rangeEnd, Integer from, Integer size) {
+    public List<EventFullDto> getAllEventsAdmin(EventFilter filter) {
         // приходят 0
-        Pageable pageable = PageRequest.of(from / size, size);
+        //Pageable pageable = PageRequest.of(from / size, size);
 //        EventFilter filter = EventFilter.builder()
 //                .users(users)
 //                .states(states == null ? null : states.stream().map(EventState::valueOf).collect(Collectors.toList()))
@@ -237,27 +309,41 @@ public class EventServiceImpl implements EventService {
 
         //List<Event> events = eventRepository.findAll(filter, pageable).toList();
         //Map<Long, Long> views = this.getViews(events);
-
-        Specification<Event> specification = (Root<Event> root, CriteriaQuery<?> query, CriteriaBuilder cb) -> {
-            List<Predicate> predicates = new ArrayList<>();
-
-            if (users != null && !users.isEmpty())
-                predicates.add(root.get("initiator").in(users));
-            if (states != null)
-                predicates.add(cb.equal(root.get("state"), states));
+        //https://github.com/max-vassiliev/java-explore-with-me/blob/feature_rating_events/main-svc/src/main/java/ru/practicum/ewm/event/model/params/EventAdminSearchParams.java
+//        Specification<Event> specification = (Root<Event> root, CriteriaQuery<?> query, CriteriaBuilder cb) -> {
+//            List<Predicate> predicates = new ArrayList<>();
+//
+//            if (users != null && !users.isEmpty())
+//                predicates.add(root.get("initiator").in(users));
+//            if (states != null)
+////                predicates.add(cb.equal(root.get("state"), states));
 //                predicates.add((root.get("state").in(states))); // возможно EventState
-            if (categories != null && !categories.isEmpty())
-                predicates.add(root.join("category", JoinType.INNER).get("id").in(categories));
-            if (rangeStart != null)
-                predicates.add(cb.greaterThanOrEqualTo(root.get("eventDate"), rangeStart));
-            if (rangeEnd != null)
-                predicates.add(cb.lessThanOrEqualTo(root.get("eventDate"), rangeEnd));
+//            if (categories != null && !categories.isEmpty())
+//                predicates.add(root.join("category", JoinType.INNER).get("id").in(categories));
+//            if (rangeStart != null)
+//                predicates.add(cb.greaterThanOrEqualTo(root.get("eventDate"), rangeStart));
+//            if (rangeEnd != null)
+//                predicates.add(cb.lessThanOrEqualTo(root.get("eventDate"), rangeEnd));
+//
+//            return cb.and(predicates.toArray(new Predicate[predicates.size()]));
+//        };
+//
+//        List<Event> eventList = eventRepository.findAll(specification, pageable).getContent();
+        // return eventList.stream().map(EventMapper::eventToEventFullDto).collect(Collectors.toList());//views доделать
+        return null;
+    }
 
-            return cb.and(predicates.toArray(new Predicate[predicates.size()]));
-        };
 
-        List<Event> eventList = eventRepository.findAll(specification, pageable).getContent();
-        return eventList.stream().map(EventMapper::eventToEventFullDto).collect(Collectors.toList());//views доделать
+    private void checkEventRequestConstraints(User user, Event event) {
+        if (event.getParticipantLimit() > 0 && event.getConfirmedRequests().equals(event.getParticipantLimit())) {
+            throw new ConflictException("Мероприятие достигло лимита участников");
+        }
+        if (!(event.getState().equals(EventState.PUBLISHED))) {
+            throw new ConflictException("Мероприятие пока не опубликовано");
+        }
+        if (user.equals(event.getInitiator())) {
+            throw new ConflictException(("Инициатор и участник - одно лицо"));
+        }
     }
 
 

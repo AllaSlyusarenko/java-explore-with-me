@@ -3,8 +3,6 @@ package ru.practicum.ewm.request.dto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
 
-import javax.validation.constraints.NotNull;
-
 @Getter
 @Setter
 @NoArgsConstructor
@@ -16,5 +14,5 @@ public class ParticipationRequestDto { //in
     private String created; // Дата и время создания заявки
     private Long event; //Идентификатор события
     private Long requester; // Идентификатор пользователя, отправившего заявку
-    private RequestStatus status; //Статус заявки
+    private ParticipationStatus status; //Статус заявки
 }

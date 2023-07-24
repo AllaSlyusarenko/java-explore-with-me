@@ -3,7 +3,7 @@ package ru.practicum.ewm.request.model;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
 import ru.practicum.ewm.event.model.Event;
-import ru.practicum.ewm.request.dto.RequestStatus;
+import ru.practicum.ewm.request.dto.ParticipationStatus;
 import ru.practicum.ewm.user.model.User;
 import ru.practicum.ewm.utility.Constants;
 
@@ -18,7 +18,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @ToString
 @Builder(toBuilder = true)
-public class Request {
+public class Participation {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -27,15 +27,15 @@ public class Request {
     @JsonFormat(pattern = Constants.DATE_PATTERN_FULL)
     private LocalDateTime created;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "event")
     private Event event;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "requester")
     private User requester;
 
     @Enumerated(EnumType.STRING)
     @JoinColumn(name = "status")
-    private RequestStatus status;
+    private ParticipationStatus status;
 }

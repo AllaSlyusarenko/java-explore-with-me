@@ -5,8 +5,8 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.*;
 import ru.practicum.ewm.category.model.Category;
 import ru.practicum.ewm.event.dto.EventState;
-import ru.practicum.ewm.request.dto.RequestStatus;
-import ru.practicum.ewm.request.model.Request;
+import ru.practicum.ewm.request.dto.ParticipationStatus;
+import ru.practicum.ewm.request.model.Participation;
 import ru.practicum.ewm.user.model.User;
 import ru.practicum.ewm.utility.Constants;
 
@@ -39,7 +39,7 @@ public class Event {
 
     @OneToMany(mappedBy = "event", fetch = FetchType.LAZY)
     @JsonManagedReference
-    private Collection<Request> requests;
+    private Collection<Participation> requests;
 //    @JoinColumn(name ="requests_id")
 //    @OneToMany
 //    private List<ParticipationRequest> requests;
@@ -87,12 +87,12 @@ public class Event {
 
     private Integer views;
 
-    public Collection<Request> getConfirmedRequests() {
+    public Collection<Participation> getConfirmedRequests() {
         if (this.getRequests() == null) {
             return new ArrayList<>();
         }
         return this.getRequests().stream()
-                .filter((request) -> request.getStatus() == RequestStatus.APPROVED)
+                .filter((request) -> request.getStatus() == ParticipationStatus.CONFIRMED)
                 .collect(Collectors.toUnmodifiableList());
     }
 }

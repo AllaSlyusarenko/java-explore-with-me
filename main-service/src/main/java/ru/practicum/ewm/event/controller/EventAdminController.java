@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.ewm.event.dto.EventFullDto;
 import ru.practicum.ewm.event.dto.EventShortDto;
 import ru.practicum.ewm.event.dto.EventState;
+import ru.practicum.ewm.event.repository.EventFilter;
 import ru.practicum.ewm.event.service.EventService;
 
 import javax.validation.constraints.Positive;
@@ -29,7 +30,7 @@ public class EventAdminController {
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     public List<EventFullDto> getAllEventsAdmin(@RequestParam(name = "users", required = false) List<Long> users,
-                                                @RequestParam(name = "states", required = false) EventState states,
+                                                @RequestParam(name = "states", required = false) List<EventState> states,
                                                 @RequestParam(name = "categories", required = false) List<Long> categories,
                                                 @RequestParam(name = "rangeStart", required = false)
                                                 @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime rangeStart,
@@ -38,7 +39,8 @@ public class EventAdminController {
                                                 @RequestParam(name = "from", defaultValue = "0") @PositiveOrZero Integer from,
                                                 @RequestParam(name = "size", defaultValue = "10") @Positive Integer size) {
         log.debug("Получение событий для: {}, {},{},{},{}", users, states, categories, rangeStart, rangeEnd);
-        return eventService.getAllEventsAdmin(users, states, categories, rangeStart, rangeEnd, from, size);
+        EventFilter filter = new EventFilter(users, states, categories, rangeStart, rangeEnd, from, size);
+        return eventService.getAllEventsAdmin(filter);
     }
 
 //    @PatchMapping
