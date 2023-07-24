@@ -16,7 +16,7 @@ public class EventShortDto { //Respose short
     private Long id;
     private String annotation;
     private CategoryResponseDto category;
-    private Long confirmedRequests; //Количество одобренных заявок на участие в данном событии
+    private Integer confirmedRequests; //Количество одобренных заявок на участие в данном событии
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime eventDate; //Дата и время, на которые намечено событие (в формате "yyyy-MM-dd HH:mm:ss")
     private UserShortDto initiator;

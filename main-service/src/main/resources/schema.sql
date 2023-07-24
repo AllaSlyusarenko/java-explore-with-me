@@ -25,7 +25,7 @@ create TABLE IF NOT EXISTS events(
 id                 BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
 annotation         VARCHAR(2000) NOT NULL,
 category_id        BIGINT NOT NULL REFERENCES categories(id),
---confirmed_requests INT NOT NULL,
+confirmed_requests INT NOT NULL,
 created_on         TIMESTAMP  WITHOUT TIME ZONE NOT NULL,
 description        VARCHAR(7000) NOT NULL,
 event_date         TIMESTAMP  WITHOUT TIME ZONE NOT NULL,

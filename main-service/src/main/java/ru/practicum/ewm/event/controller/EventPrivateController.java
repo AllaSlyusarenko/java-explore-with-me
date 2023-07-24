@@ -37,26 +37,6 @@ public class EventPrivateController {
         return eventService.saveEvent(userId, newEventDto);
     }
 
-    @PostMapping("/requests") // добавление запроса от текущего пользователя
-    @ResponseStatus(HttpStatus.CREATED)
-    public ParticipationResponseDto saveRequest(@PathVariable("userId") @Positive Long userId,
-                                                @RequestParam("eventId") @Positive Long eventId) {
-        return eventService.saveRequest(userId, eventId);
-    }
-
-    @GetMapping("/requests") // инфа о заявках текущего пользователя в чужих событиях
-    @ResponseStatus(HttpStatus.OK)
-    public List<ParticipationResponseDto> getRequestByOtherUserEvents(@PathVariable("userId") @Positive Long userId) {
-        return eventService.getRequestByOtherUserEvents(userId);
-    }
-
-    @PatchMapping("/requests/{requestId}/cancel") // отмена своего запроса на участие
-    @ResponseStatus(HttpStatus.OK)
-    public ParticipationResponseDto cancelRequestByUser(@PathVariable("userId") Long userId,
-                                                        @PathVariable("requestId") @Positive Long requestId) {
-        return eventService.cancelRequestByUser(userId, requestId);
-    }
-
     @GetMapping("/events") // события, добавленные текущим пользователем
     @ResponseStatus(HttpStatus.OK)
     public List<EventShortDto> getEventsByUserId(@PathVariable(value = "userId") Long userId,
@@ -66,7 +46,7 @@ public class EventPrivateController {
         return eventService.getEventsByUserId(userId, from, size);
     }
 
-    @GetMapping("/events/{eventId}") // полная инфа события, добаленного текущим пользователем
+    @GetMapping("/events/{eventId}") // полная инфа события, добавленного текущим пользователем
     @ResponseStatus(HttpStatus.OK)
     public EventFullDto getEventByUserIdEventId(@PathVariable(value = "userId") Long userId,
                                                 @PathVariable(value = "eventId") Long eventId) {
@@ -91,7 +71,8 @@ public class EventPrivateController {
         return eventService.getRequestsByUserEvent(userId, eventId);
     }
 
-    @PatchMapping("/events/{eventId}/requests") // изм-е статуса(подтверждена, отменена) заявок на участие тек пользователя
+    @PatchMapping("/events/{eventId}/requests")
+    // изм-е статуса(подтверждена, отменена) заявок на участие тек пользователя
     @ResponseStatus(HttpStatus.OK)
     public EventRequestStatusUpdateResult updateRequestStatusByUserEvent(@PathVariable(value = "userId") @Positive Long userId,
                                                                          @PathVariable(value = "eventId") @Positive Long eventId,
@@ -100,5 +81,25 @@ public class EventPrivateController {
         return eventService.updateRequestStatusByUserEvent(userId, eventId, eventRequestStatusUpdateRequest);
     }
 
+    //requests
+    @PostMapping("/requests") // добавление запроса от текущего пользователя
+    @ResponseStatus(HttpStatus.CREATED)
+    public ParticipationResponseDto saveRequest(@PathVariable("userId") Long userId,
+                                                @RequestParam(name = "eventId") Long eventId) {
+        return eventService.saveRequest(userId, eventId);
+    }
+
+    @GetMapping("/requests") // инфа о заявках текущего пользователя в чужих событиях
+    @ResponseStatus(HttpStatus.OK)
+    public List<ParticipationResponseDto> getRequestByOtherUserEvents(@PathVariable("userId") @Positive Long userId) {
+        return eventService.getRequestByOtherUserEvents(userId);
+    }
+
+    @PatchMapping("/requests/{requestId}/cancel") // отмена своего запроса на участие
+    @ResponseStatus(HttpStatus.OK)
+    public ParticipationResponseDto cancelRequestByUser(@PathVariable("userId") Long userId,
+                                                        @PathVariable("requestId") @Positive Long requestId) {
+        return eventService.cancelRequestByUser(userId, requestId);
+    }
 
 }

@@ -4,6 +4,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import ru.practicum.ewm.event.dto.EventState;
 import ru.practicum.ewm.event.model.Event;
 
 import org.springframework.data.domain.Pageable;
@@ -16,4 +17,5 @@ public interface EventRepository extends JpaRepository<Event, Long> {
     List<Event> findAllByCategory_Id(Long id);
     Page<Event> findAll(Specification<Event> spec, Pageable pageable);
     Event findByIdAndInitiator_Id(Long eventId, Long userId);
+    Event findByIdAndState(Long eventId, EventState state);
 }

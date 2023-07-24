@@ -37,14 +37,12 @@ public class Event {
     @JoinColumn(name = "category_id")
     private Category category;
 
-    @OneToMany(mappedBy = "event", fetch = FetchType.LAZY)
-    @JsonManagedReference
-    private Collection<Participation> requests;
-//    @JoinColumn(name ="requests_id")
-//    @OneToMany
-//    private List<ParticipationRequest> requests;
-//    @Column(name = "confirmed_requests")
-//    private Integer confirmedRequests; //Количество одобренных заявок на участие в данном событии
+//    @OneToMany(mappedBy = "event", fetch = FetchType.LAZY)
+//    @JsonManagedReference
+//    private Collection<Participation> requests;
+
+    @JoinColumn(name = "confirmed_requests")
+    private Integer confirmedRequests; //Количество одобренных заявок на участие в данном событии
 
     @Column(name = "created_on")
     @JsonFormat(pattern = Constants.DATE_PATTERN_FULL)
@@ -87,12 +85,12 @@ public class Event {
 
     private Integer views;
 
-    public Collection<Participation> getConfirmedRequests() {
-        if (this.getRequests() == null) {
-            return new ArrayList<>();
-        }
-        return this.getRequests().stream()
-                .filter((request) -> request.getStatus() == ParticipationStatus.CONFIRMED)
-                .collect(Collectors.toUnmodifiableList());
-    }
+//    public Collection<Participation> getConfirmedRequests() {
+//        if (this.getRequests() == null) {
+//            return new ArrayList<>();
+//        }
+//        return this.getRequests().stream()
+//                .filter((request) -> request.getStatus() == ParticipationStatus.CONFIRMED)
+//                .collect(Collectors.toUnmodifiableList());
+//    }
 }

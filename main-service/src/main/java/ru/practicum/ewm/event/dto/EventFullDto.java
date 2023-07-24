@@ -17,7 +17,7 @@ public class EventFullDto { //Response
     private Long id;
     private String annotation;
     private CategoryResponseDto category;
-    private Long confirmedRequests; //Количество одобренных заявок на участие в данном событии
+    private Integer confirmedRequests; //Количество одобренных заявок на участие в данном событии
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdOn; //Дата и время создания события (в формате "yyyy-MM-dd HH:mm:ss")
     private String description;

@@ -4,10 +4,7 @@ import lombok.experimental.UtilityClass;
 import ru.practicum.ewm.category.dto.CategoryResponseDto;
 import ru.practicum.ewm.category.mapper.CategoryMapper;
 import ru.practicum.ewm.category.model.Category;
-import ru.practicum.ewm.event.dto.EventFullDto;
-import ru.practicum.ewm.event.dto.EventShortDto;
-import ru.practicum.ewm.event.dto.LocationDto;
-import ru.practicum.ewm.event.dto.NewEventDto;
+import ru.practicum.ewm.event.dto.*;
 import ru.practicum.ewm.event.model.Event;
 import ru.practicum.ewm.event.model.Location;
 import ru.practicum.ewm.user.dto.UserShortDto;
@@ -18,18 +15,16 @@ import ru.practicum.ewm.utility.Constants;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 @UtilityClass
 public class EventMapper {
-    public Event newEventDtoToEvent(User user, Category category, Location location, NewEventDto newEventDto) {
+    public Event newEventDtoToEvent(User user, Category category, Location location, LocalDateTime created, NewEventDto newEventDto) {
         Event event = new Event();
         event.setAnnotation(newEventDto.getAnnotation());
         event.setCategory(category);
-//        event.setConfirmedRequests(newEventDto.getParticipantLimit());
-        event.setCreatedOn(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS));
+        event.setConfirmedRequests(0);
+        event.setCreatedOn(created);
         event.setDescription(newEventDto.getDescription());
         event.setEventDate(LocalDateTime.parse(newEventDto.getEventDate(), Constants.formatterDate));
         event.setInitiator(user);
@@ -38,6 +33,7 @@ public class EventMapper {
         event.setParticipantLimit(newEventDto.getParticipantLimit());
         event.setTitle(newEventDto.getTitle());
         event.setRequestModeration(newEventDto.getRequestModeration());
+        event.setState(EventState.PENDING);
         event.setViews(0);
         return event;
     }
@@ -48,7 +44,7 @@ public class EventMapper {
         eventFullDto.setAnnotation(event.getAnnotation());
         eventFullDto.setCategory(CategoryResponseDto.builder()
                 .id(event.getCategory().getId()).name(event.getCategory().getName()).build());
-        eventFullDto.setConfirmedRequests(Long.valueOf(event.getConfirmedRequests().size()));
+        eventFullDto.setConfirmedRequests(event.getConfirmedRequests());
         eventFullDto.setCreatedOn(event.getCreatedOn());
         eventFullDto.setDescription(event.getDescription());
         eventFullDto.setEventDate(event.getEventDate());
@@ -79,7 +75,7 @@ public class EventMapper {
         eventShortDto.setId(event.getId());
         eventShortDto.setAnnotation(event.getAnnotation());
         eventShortDto.setCategory(CategoryMapper.categoryToCategoryResponseDto(event.getCategory()));
-        eventShortDto.setConfirmedRequests(Long.valueOf(event.getConfirmedRequests().size()));
+        eventShortDto.setConfirmedRequests(event.getConfirmedRequests());
         eventShortDto.setEventDate(event.getEventDate());
         eventShortDto.setInitiator(UserMapper.userToUserShortDto(event.getInitiator()));
         eventShortDto.setPaid(event.getPaid());

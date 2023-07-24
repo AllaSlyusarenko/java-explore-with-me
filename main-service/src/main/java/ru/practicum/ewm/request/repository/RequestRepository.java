@@ -7,6 +7,7 @@ import ru.practicum.ewm.request.model.Participation;
 import ru.practicum.ewm.user.model.User;
 
 import java.util.List;
+import java.util.Set;
 
 public interface RequestRepository extends JpaRepository<Participation, Long> {
     List<Participation> findAllByRequester(User requester);
@@ -17,4 +18,5 @@ public interface RequestRepository extends JpaRepository<Participation, Long> {
 
     Participation findFirstByEvent_IdAndRequester_Id(Long eventId, Long userId);
     Participation findByIdAndRequester_Id(Long requestId, Long userId);
+    List<Participation> findAllByEvent_IdAndIdIn(Long eventId, Set<Long> ids);
 }
