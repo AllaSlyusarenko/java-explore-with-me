@@ -19,7 +19,8 @@ public interface EventService {
 
     public EventFullDto updateEventByUserIdEventId(Long userId, Long eventId, UpdateEventUserRequest updateEventUserRequest);
 
-    public List<EventFullDto> getAllEventsAdmin(EventFilter filter);
+    public List<EventFullDto> getAllEventsAdmin(List<Long> users, EventState states, List<Long> categories,
+                                                LocalDateTime rangeStart, LocalDateTime rangeEnd, int from, int size);
 
     public ParticipationResponseDto saveRequest(Long userId, Long eventId);
 
@@ -34,4 +35,6 @@ public interface EventService {
     public List<EventShortDto> getEventsWithFilter(String text, List<Long> categories, Boolean paid, LocalDateTime rangeStart, LocalDateTime rangeEnd, Boolean onlyAvailable, String sort, Integer from, Integer size, HttpServletRequest request);
 
     public EventFullDto getEventById(Long id, HttpServletRequest request);
+
+    EventFullDto updateEventAdmin(Long eventId, UpdateEventAdminRequest updateEventAdminRequest);
 }

@@ -15,7 +15,7 @@ import java.util.List;
 @ToString
 public class EventFilter {
     private List<Long> users;
-    private List<EventState> states;
+    private EventState states;
     //private final String text;
     private List<Long> categories;
     //private final Boolean paid;
@@ -26,7 +26,7 @@ public class EventFilter {
     private Integer size;
     private PageRequest page;
 
-    public EventFilter(List<Long> users, List<EventState> states, List<Long> categories,
+    public EventFilter(List<Long> users, EventState states, List<Long> categories,
                        LocalDateTime rangeStart, LocalDateTime rangeEnd, int from, int size) {
         this.users = users;
         this.states = states;

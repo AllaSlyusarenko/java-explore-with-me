@@ -43,15 +43,21 @@ public class EventMapper {
         eventFullDto.setId(event.getId());
         eventFullDto.setAnnotation(event.getAnnotation());
         eventFullDto.setCategory(CategoryResponseDto.builder()
-                .id(event.getCategory().getId()).name(event.getCategory().getName()).build());
+                .id(event.getCategory().getId())
+                .name(event.getCategory().getName())
+                .build());
         eventFullDto.setConfirmedRequests(event.getConfirmedRequests());
         eventFullDto.setCreatedOn(event.getCreatedOn());
         eventFullDto.setDescription(event.getDescription());
         eventFullDto.setEventDate(event.getEventDate());
-        eventFullDto.setInitiator(UserShortDto.builder().id(event.getInitiator().getId())
-                .name(event.getInitiator().getName()).build());
-        eventFullDto.setLocation(LocationDto.builder().lat(event.getLocation().getLat())
-                .lon(event.getLocation().getLon()).build());
+        eventFullDto.setInitiator(UserShortDto.builder()
+                .id(event.getInitiator().getId())
+                .name(event.getInitiator().getName())
+                .build());
+        eventFullDto.setLocation(LocationDto.builder()
+                .lat(event.getLocation().getLat())
+                .lon(event.getLocation().getLon())
+                .build());
         eventFullDto.setPaid(event.getPaid());
         eventFullDto.setParticipantLimit(event.getParticipantLimit());
         eventFullDto.setPublishedOn(event.getPublishedOn());

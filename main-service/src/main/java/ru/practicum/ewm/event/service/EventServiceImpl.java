@@ -5,35 +5,21 @@ import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.ewm.category.model.Category;
 import ru.practicum.ewm.category.repository.CategoryRepository;
 import ru.practicum.ewm.client.stats.StatsClient;
-import lombok.RequiredArgsConstructor;
-import org.springframework.beans.BeanUtils;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.stereotype.Service;
-import org.springframework.util.ReflectionUtils;
-import org.springframework.util.StringUtils;
-
-import ru.practicum.ewm.dto.stats.ViewStatsResponse;
 import ru.practicum.ewm.event.dto.*;
 import ru.practicum.ewm.event.mapper.EventMapper;
 import ru.practicum.ewm.event.mapper.LocationMapper;
 import ru.practicum.ewm.event.model.Event;
 import ru.practicum.ewm.event.model.Location;
-import ru.practicum.ewm.event.repository.EventFilter;
 import ru.practicum.ewm.event.repository.EventRepository;
 import ru.practicum.ewm.event.repository.LocationRepository;
 import ru.practicum.ewm.exception.ConflictException;
 import ru.practicum.ewm.exception.NotFoundException;
-
 import ru.practicum.ewm.exception.ValidationException;
 import ru.practicum.ewm.request.dto.EventRequestStatusUpdateRequest;
 import ru.practicum.ewm.request.dto.EventRequestStatusUpdateResult;
@@ -48,21 +34,11 @@ import ru.practicum.ewm.utility.Constants;
 
 import javax.persistence.criteria.*;
 import javax.servlet.http.HttpServletRequest;
-import java.beans.PropertyDescriptor;
-import java.lang.reflect.Method;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import java.time.LocalDateTime;
-
 import java.util.*;
-import java.util.stream.Collectors;
-
-import static java.util.stream.Collectors.toMap;
 
 
 @Slf4j
@@ -76,8 +52,8 @@ public class EventServiceImpl implements EventService {
     private final LocationRepository locationRepository;
     private final RequestRepository requestRepository;
     private final StatsClient statsClient;
-    private ModelMapper mapper;
-
+//    private final ModelMapper mapper;
+//
 //    public Map<Long, Long> getViews(List<Event> events) {
 //
 //        List<String> uris = events.stream()
@@ -309,6 +285,64 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
+    @Transactional
+    public EventFullDto updateEventAdmin(Long eventId, UpdateEventAdminRequest updateEventAdminRequest) {
+//        дата начала изменяемого события должна быть не ранее чем за час от даты публикации. (Ожидается код ошибки 409)
+//        событие можно публиковать, только если оно в состоянии ожидания публикации (Ожидается код ошибки 409)
+//        событие можно отклонить, только если оно еще не опубликовано (Ожидается код ошибки 409)
+        LocalDateTime now = LocalDateTime.now();
+        if (updateEventAdminRequest.getEventDate() != null) {
+            if (updateEventAdminRequest.getEventDate().isBefore(now)) {
+                throw new ValidationException("Начало события не может быть в прошлом");
+            }
+            if (now.plusHours(1).isAfter(updateEventAdminRequest.getEventDate())) {
+                throw new ConflictException("Между датой публикации и началом события должен быть минимум 1 час");
+            }
+        }
+        Event event = eventRepository.findById(eventId).orElseThrow(() -> new NotFoundException("Событие не найдено"));
+        if (!event.getState().equals(EventState.PENDING)) {
+            throw new ConflictException("Событие должно быть в статусе ожидания");
+        }
+        if (updateEventAdminRequest.getStateAction().equals("PUBLISH_EVENT")) {
+            event.setState(EventState.PUBLISHED);
+            event.setPublishedOn(now);
+        } else {
+            event.setState(EventState.CANCELED);
+        }
+        if (updateEventAdminRequest.getAnnotation() != null) {
+            event.setAnnotation(updateEventAdminRequest.getAnnotation());
+        }
+        if (updateEventAdminRequest.getCategory() != null) {
+            event.setCategory(categoryRepository.findById(updateEventAdminRequest.getCategory())
+                    .orElseThrow(() -> new NotFoundException("Категория не найдена")));
+        }
+        if (updateEventAdminRequest.getDescription() != null) {
+            event.setDescription(updateEventAdminRequest.getDescription());
+        }
+        if (updateEventAdminRequest.getEventDate() != null) {
+            event.setEventDate(updateEventAdminRequest.getEventDate());
+        }
+        if (updateEventAdminRequest.getLocation() != null) {
+            Location location = locationRepository.save(updateEventAdminRequest.getLocation());
+            event.setLocation(location);
+        }
+        if (updateEventAdminRequest.getPaid() != null) {
+            event.setPaid(updateEventAdminRequest.getPaid());
+        }
+        if (updateEventAdminRequest.getParticipantLimit() != null) {
+            event.setParticipantLimit(updateEventAdminRequest.getParticipantLimit());
+        }
+        if (updateEventAdminRequest.getRequestModeration() != null) {
+            event.setRequestModeration(updateEventAdminRequest.getRequestModeration());
+        }
+        if (updateEventAdminRequest.getTitle() != null) {
+            event.setTitle(updateEventAdminRequest.getTitle());
+        }
+        Event eventSave = eventRepository.save(event);
+        return EventMapper.eventToEventFullDto(eventSave);
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public List<EventShortDto> getEventsByUserId(Long userId, Integer from, Integer size) {
         User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("Пользователь не найден"));
@@ -346,7 +380,8 @@ public class EventServiceImpl implements EventService {
             event.setAnnotation(updateEventUserRequest.getAnnotation());
         }
         if (updateEventUserRequest.getCategory() != null) {
-            event.setCategory(mapper.map(updateEventUserRequest.getCategory(), Category.class));
+            event.setCategory(categoryRepository.findById(updateEventUserRequest.getCategory())
+                    .orElseThrow(() -> new NotFoundException("Категория не найдена")));
         }
         if (updateEventUserRequest.getDescription() != null) {
             event.setDescription(updateEventUserRequest.getDescription());
@@ -385,41 +420,29 @@ public class EventServiceImpl implements EventService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<EventFullDto> getAllEventsAdmin(EventFilter filter) {
-        // приходят 0
-        //Pageable pageable = PageRequest.of(from / size, size);
-//        EventFilter filter = EventFilter.builder()
-//                .users(users)
-//                .states(states == null ? null : states.stream().map(EventState::valueOf).collect(Collectors.toList()))
-//                .categories(categories)
-//                .rangeStart(rangeStart)
-//                .rangeEnd(rangeEnd)
-//                .build();
+    public List<EventFullDto> getAllEventsAdmin(List<Long> users, EventState states, List<Long> categories,
+                                                LocalDateTime rangeStart, LocalDateTime rangeEnd, int from, int size) {
+        Pageable pageable = PageRequest.of(from / size, size);
+        Specification<Event> specification = (Root<Event> root, CriteriaQuery<?> query, CriteriaBuilder cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
 
-        //List<Event> events = eventRepository.findAll(filter, pageable).toList();
-        //Map<Long, Long> views = this.getViews(events);
+            if (users != null && !users.isEmpty())
+                predicates.add(root.get("initiator").in(users));
+            if (states != null)
+                predicates.add(cb.equal(root.get("state"), states));
+            //predicates.add((root.get("state").in(states))); // возможно EventState
+            if (categories != null && !categories.isEmpty())
+                predicates.add(root.join("category", JoinType.INNER).get("id").in(categories));
+            if (rangeStart != null)
+                predicates.add(cb.greaterThanOrEqualTo(root.get("eventDate"), rangeStart));
+            if (rangeEnd != null)
+                predicates.add(cb.lessThanOrEqualTo(root.get("eventDate"), rangeEnd));
 
-//        Specification<Event> specification = (Root<Event> root, CriteriaQuery<?> query, CriteriaBuilder cb) -> {
-//            List<Predicate> predicates = new ArrayList<>();
-//
-//            if (users != null && !users.isEmpty())
-//                predicates.add(root.get("initiator").in(users));
-//            if (states != null)
-////                predicates.add(cb.equal(root.get("state"), states));
-//                predicates.add((root.get("state").in(states))); // возможно EventState
-//            if (categories != null && !categories.isEmpty())
-//                predicates.add(root.join("category", JoinType.INNER).get("id").in(categories));
-//            if (rangeStart != null)
-//                predicates.add(cb.greaterThanOrEqualTo(root.get("eventDate"), rangeStart));
-//            if (rangeEnd != null)
-//                predicates.add(cb.lessThanOrEqualTo(root.get("eventDate"), rangeEnd));
-//
-//            return cb.and(predicates.toArray(new Predicate[predicates.size()]));
-//        };
-//
-//        List<Event> eventList = eventRepository.findAll(specification, pageable).getContent();
-        // return eventList.stream().map(EventMapper::eventToEventFullDto).collect(Collectors.toList());//views доделать
-        return null;
+            return cb.and(predicates.toArray(new Predicate[predicates.size()]));
+        };
+
+        List<Event> eventList = eventRepository.findAll(specification, pageable).getContent();
+        return eventList.stream().map(EventMapper::eventToEventFullDto).collect(Collectors.toList());//views доделать
     }
 
 
