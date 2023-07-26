@@ -18,7 +18,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @ToString
 @Builder(toBuilder = true)
-public class Participation {
+public class Participation {    //request
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

@@ -186,10 +186,14 @@ public class EventServiceImpl implements EventService {
     @Override
     @Transactional
     public ParticipationResponseDto cancelRequestByUser(Long userId, Long requestId) {
-//        User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("Пользователь не найден"));
         Participation participation = requestRepository.findByIdAndRequester_Id(requestId, userId);
         if (participation == null) {
             throw new NotFoundException("Событие не найдено");
+        }
+        Event event = participation.getEvent();
+        if (participation.getStatus() == ParticipationStatus.CONFIRMED) {
+            event.setConfirmedRequests(event.getConfirmedRequests() - 1);
+            Event eventSave = eventRepository.save(event);
         }
         participation.setStatus(ParticipationStatus.CANCELED);
         Participation participationSave = requestRepository.save(participation);
@@ -224,6 +228,10 @@ public class EventServiceImpl implements EventService {
                     .map(ParticipationMapper::toParticipationResponseDto)
                     .collect(Collectors.toList());
             participationResponseDtos.forEach(x -> x.setStatus(ParticipationStatus.CONFIRMED));
+
+            //увеличить количество одобренных заявок
+
+
             eventRequestStatusUpdateResult.setConfirmedRequests(participationResponseDtos);
             return eventRequestStatusUpdateResult;
         }
@@ -465,7 +473,8 @@ public class EventServiceImpl implements EventService {
             throw new ConflictException(("Инициатор и участник - одно лицо"));
         }
     }
-    private void checkQEvent (){
+
+    private void checkQEvent() {
         QEvent qEvent = QEvent.event;
     }
 
