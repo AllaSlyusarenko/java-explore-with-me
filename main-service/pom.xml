@@ -109,10 +109,7 @@
                         </goals>
                         <configuration>
                             <outputDirectory>target/generated-sources/java</outputDirectory>
-                            <processor>com.querydsl.apt.jpa.JPAAnnotationProcessor,lombok.launch.AnnotationProcessorHider$AnnotationProcessor</processor>
-                            <options>
-                                <querydsl.generatedAnnotationClass>javax.annotation.Generated</querydsl.generatedAnnotationClass>
-                            </options>
+                            <processor>com.querydsl.apt.jpa.JPAAnnotationProcessor</processor>
                         </configuration>
                     </execution>
                 </executions>
@@ -124,6 +121,8 @@
                     </dependency>
                 </dependencies>
             </plugin>
+
+
         </plugins>
     </build>
 </project>

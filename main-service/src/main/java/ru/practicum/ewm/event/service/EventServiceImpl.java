@@ -14,6 +14,7 @@ import ru.practicum.ewm.event.dto.*;
 import ru.practicum.ewm.event.mapper.EventMapper;
 import ru.practicum.ewm.event.mapper.LocationMapper;
 import ru.practicum.ewm.event.model.Event;
+import ru.practicum.ewm.event.model.QEvent;
 import ru.practicum.ewm.event.model.Location;
 import ru.practicum.ewm.event.repository.EventRepository;
 import ru.practicum.ewm.event.repository.LocationRepository;
@@ -143,6 +144,9 @@ public class EventServiceImpl implements EventService {
         User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("Пользователь не найден"));
         Event event = eventRepository.findById(eventId).orElseThrow(() -> new NotFoundException("Событие не найдено"));
 
+        if (requestRepository.findAllByRequester_IdAndEvent_Id(userId, eventId) != null) {
+            throw new ConflictException("Повторный запрос на участие в событии");
+        }
         if (event.getParticipantLimit() > 0 && event.getConfirmedRequests() >= event.getParticipantLimit()) {
             throw new ConflictException("Мероприятие достигло лимита участников");
         }
@@ -460,6 +464,9 @@ public class EventServiceImpl implements EventService {
         if (user.equals(event.getInitiator())) {
             throw new ConflictException(("Инициатор и участник - одно лицо"));
         }
+    }
+    private void checkQEvent (){
+        QEvent qEvent = QEvent.event;
     }
 
 //    private List<Request> findConfirmedRequests(Event event) {

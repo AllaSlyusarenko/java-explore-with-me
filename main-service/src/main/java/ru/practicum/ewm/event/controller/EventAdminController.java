@@ -8,13 +8,11 @@ import org.springframework.http.MediaType;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.ewm.event.dto.EventFullDto;
-import ru.practicum.ewm.event.dto.EventShortDto;
 import ru.practicum.ewm.event.dto.EventState;
 import ru.practicum.ewm.event.dto.UpdateEventAdminRequest;
 import ru.practicum.ewm.event.repository.EventFilter;
 import ru.practicum.ewm.event.service.EventService;
 
-import javax.validation.Valid;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
 import java.time.LocalDateTime;
@@ -47,7 +45,7 @@ public class EventAdminController {
     @PatchMapping("/{eventId}") // редактирование данных события и его статуса(отклонение/публикация)
     @ResponseStatus(HttpStatus.OK)
     public EventFullDto updateEventAdmin(@PathVariable(name = "eventId") Long eventId,
-                                         @Valid @RequestBody UpdateEventAdminRequest updateEventAdminRequest) {
+                                         @Validated @RequestBody UpdateEventAdminRequest updateEventAdminRequest) {
         log.debug("Изменение события администратором для: {}", eventId);
         return eventService.updateEventAdmin(eventId, updateEventAdminRequest);
     }

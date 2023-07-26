@@ -1,20 +1,14 @@
 package ru.practicum.ewm.event.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.*;
 import ru.practicum.ewm.category.model.Category;
 import ru.practicum.ewm.event.dto.EventState;
-import ru.practicum.ewm.request.dto.ParticipationStatus;
-import ru.practicum.ewm.request.model.Participation;
 import ru.practicum.ewm.user.model.User;
 import ru.practicum.ewm.utility.Constants;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "events")
@@ -36,10 +30,6 @@ public class Event {
     @ManyToOne
     @JoinColumn(name = "category_id")
     private Category category;
-
-//    @OneToMany(mappedBy = "event", fetch = FetchType.LAZY)
-//    @JsonManagedReference
-//    private Collection<Participation> requests;
 
     @JoinColumn(name = "confirmed_requests")
     private Integer confirmedRequests; //Количество одобренных заявок на участие в данном событии
@@ -84,13 +74,4 @@ public class Event {
     private String title; //Заголовок
 
     private Integer views;
-
-//    public Collection<Participation> getConfirmedRequests() {
-//        if (this.getRequests() == null) {
-//            return new ArrayList<>();
-//        }
-//        return this.getRequests().stream()
-//                .filter((request) -> request.getStatus() == ParticipationStatus.CONFIRMED)
-//                .collect(Collectors.toUnmodifiableList());
-//    }
 }

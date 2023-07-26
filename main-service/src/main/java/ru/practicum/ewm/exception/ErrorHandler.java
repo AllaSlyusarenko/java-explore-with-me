@@ -27,7 +27,7 @@ public class ErrorHandler {
         return new ErrorResponse(exception.getMessage(), "BAD_REQUEST", ErrorStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler({DataIntegrityViolationException.class})
+    @ExceptionHandler({DataIntegrityViolationException.class, ConflictException.class})
     @ResponseStatus(HttpStatus.CONFLICT)
     public ErrorResponse handleConflictValidationException(final DataIntegrityViolationException exception) {
         return new ErrorResponse(exception.getMessage(), "CONFLICT", ErrorStatus.CONFLICT);

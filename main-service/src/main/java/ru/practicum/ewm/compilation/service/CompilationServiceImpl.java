@@ -15,6 +15,7 @@ import ru.practicum.ewm.compilation.repository.CompilationRepository;
 import ru.practicum.ewm.event.model.Event;
 import ru.practicum.ewm.event.repository.EventRepository;
 import ru.practicum.ewm.exception.NotFoundException;
+import ru.practicum.ewm.exception.ValidationException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,6 +33,9 @@ public class CompilationServiceImpl implements CompilationService {
     public CompilationDto saveCompilation(NewCompilationDto newCompilationDto) {
         if (newCompilationDto.getPinned() == null) {
             newCompilationDto.setPinned(false);
+        }
+        if (newCompilationDto.getTitle() == null || newCompilationDto.getTitle().isBlank()) {
+            throw new ValidationException("Поле title является обязательным для заполнения");
         }
         List<Event> eventsEntities = new ArrayList<>();
         if (newCompilationDto.getEvents() != null) {
