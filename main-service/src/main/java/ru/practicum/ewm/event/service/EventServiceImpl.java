@@ -2,7 +2,6 @@ package ru.practicum.ewm.event.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -52,7 +51,7 @@ public class EventServiceImpl implements EventService {
     private final LocationRepository locationRepository;
     private final RequestRepository requestRepository;
     private final StatsClient statsClient;
-//    private final ModelMapper mapper;
+
 //
 //    public Map<Long, Long> getViews(List<Event> events) {
 //
@@ -121,7 +120,7 @@ public class EventServiceImpl implements EventService {
     public EventFullDto saveEvent(Long userId, NewEventDto newEventDto) {
         LocalDateTime created = LocalDateTime.now();
         if (LocalDateTime.parse(newEventDto.getEventDate(), Constants.formatterDate).isBefore(created.plusHours(2))) {
-            throw new ConflictException("Указана неверная дата");
+            throw new ValidationException("Указана неверная дата");
         }
         User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("Пользователь не найден"));
         Category category = categoryRepository.findById(newEventDto.getCategory()).orElseThrow(() -> new NotFoundException("Категория не найдена"));
@@ -138,6 +137,9 @@ public class EventServiceImpl implements EventService {
     @Override
     @Transactional
     public ParticipationResponseDto saveRequest(Long userId, Long eventId) {
+        if (eventId == null) {
+            throw new ValidationException("Отсутствует необходимый идентификатор");
+        }
         User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("Пользователь не найден"));
         Event event = eventRepository.findById(eventId).orElseThrow(() -> new NotFoundException("Событие не найдено"));
 
@@ -303,11 +305,13 @@ public class EventServiceImpl implements EventService {
         if (!event.getState().equals(EventState.PENDING)) {
             throw new ConflictException("Событие должно быть в статусе ожидания");
         }
-        if (updateEventAdminRequest.getStateAction().equals("PUBLISH_EVENT")) {
-            event.setState(EventState.PUBLISHED);
-            event.setPublishedOn(now);
-        } else {
-            event.setState(EventState.CANCELED);
+        if (updateEventAdminRequest.getStateAction() != null) {
+            if (updateEventAdminRequest.getStateAction().equals("PUBLISH_EVENT")) {
+                event.setState(EventState.PUBLISHED);
+                event.setPublishedOn(now);
+            } else {
+                event.setState(EventState.CANCELED);
+            }
         }
         if (updateEventAdminRequest.getAnnotation() != null) {
             event.setAnnotation(updateEventAdminRequest.getAnnotation());
@@ -457,7 +461,6 @@ public class EventServiceImpl implements EventService {
             throw new ConflictException(("Инициатор и участник - одно лицо"));
         }
     }
-
 
 //    private List<Request> findConfirmedRequests(Event event) {
 //        return requestRepository.findConfirmedRequests(event.getId());

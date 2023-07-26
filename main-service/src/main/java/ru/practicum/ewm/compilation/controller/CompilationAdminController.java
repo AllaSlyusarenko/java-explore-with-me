@@ -17,7 +17,7 @@ import javax.validation.Valid;
 @RestController
 @RequiredArgsConstructor
 @Validated
-@RequestMapping(path = "/compilations", produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(path = "/admin/compilations", produces = MediaType.APPLICATION_JSON_VALUE)
 public class CompilationAdminController {
     private final CompilationService compilationService;
 
@@ -27,4 +27,16 @@ public class CompilationAdminController {
         return compilationService.saveCompilation(newCompilationDto);
     }
 
+    @DeleteMapping("/{compId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteCompilationById(@PathVariable(name = "compId") Long compId){
+        compilationService.deleteCompilationById(compId);
+    }
+
+    @PatchMapping("/{compId}")
+    @ResponseStatus(HttpStatus.OK)
+    public CompilationDto updateCompilationById(@PathVariable(name = "compId") Long compId,
+                                                @Valid @RequestBody NewCompilationDto newCompilationDto){
+        return compilationService.updateCompilationById(compId, newCompilationDto);
+    }
 }

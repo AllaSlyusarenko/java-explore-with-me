@@ -1,5 +1,6 @@
 package ru.practicum.ewm.event.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
 import org.springframework.lang.Nullable;
 
@@ -20,7 +21,8 @@ public class NewEventDto {
     @NotBlank
     @Size(min = 20, max = 7000)
     private String description;
-    @NotNull
+
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private String eventDate; //Дата и время, на которые намечено событие (в формате "yyyy-MM-dd HH:mm:ss")
     //Обратите внимание: дата и время на которые намечено событие не может быть раньше, чем через два часа от текущего момента
     @NotNull

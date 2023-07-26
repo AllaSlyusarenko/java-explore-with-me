@@ -1,7 +1,7 @@
+drop table IF EXISTS PUBLIC.compilations_events;
 drop table IF EXISTS PUBLIC.compilations;
 drop table IF EXISTS PUBLIC.requests;
 drop table IF EXISTS PUBLIC.EVENTS;
-drop table IF EXISTS PUBLIC.compilations_events;
 drop table IF EXISTS PUBLIC.USERS;
 drop table IF EXISTS PUBLIC.CATEGORIES;
 drop table IF EXISTS PUBLIC.LOCATIONS;

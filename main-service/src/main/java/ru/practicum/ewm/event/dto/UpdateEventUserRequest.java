@@ -6,6 +6,7 @@ import ru.practicum.ewm.category.model.Category;
 import ru.practicum.ewm.event.model.Location;
 import ru.practicum.ewm.user.model.User;
 
+import javax.validation.constraints.Future;
 import javax.validation.constraints.Size;
 import java.time.LocalDateTime;
 
@@ -24,6 +25,7 @@ public class UpdateEventUserRequest {
     @Size(min = 20, max = 7000)
     private String description;
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @Future
     private LocalDateTime eventDate; //Дата и время, на которые намечено событие (в формате "yyyy-MM-dd HH:mm:ss")
     private Location location;
     private Boolean paid; //надо ли платить

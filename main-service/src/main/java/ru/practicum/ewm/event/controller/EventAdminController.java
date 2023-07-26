@@ -14,6 +14,7 @@ import ru.practicum.ewm.event.dto.UpdateEventAdminRequest;
 import ru.practicum.ewm.event.repository.EventFilter;
 import ru.practicum.ewm.event.service.EventService;
 
+import javax.validation.Valid;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
 import java.time.LocalDateTime;
@@ -46,9 +47,8 @@ public class EventAdminController {
     @PatchMapping("/{eventId}") // редактирование данных события и его статуса(отклонение/публикация)
     @ResponseStatus(HttpStatus.OK)
     public EventFullDto updateEventAdmin(@PathVariable(name = "eventId") Long eventId,
-                                         @RequestBody UpdateEventAdminRequest updateEventAdminRequest) {
+                                         @Valid @RequestBody UpdateEventAdminRequest updateEventAdminRequest) {
         log.debug("Изменение события администратором для: {}", eventId);
-        EventFullDto eventFull = eventService.updateEventAdmin(eventId, updateEventAdminRequest);
-        return eventFull;
+        return eventService.updateEventAdmin(eventId, updateEventAdminRequest);
     }
 }
