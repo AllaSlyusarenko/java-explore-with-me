@@ -228,11 +228,11 @@ public class EventServiceImpl implements EventService {
         List<Participation> participations = requestRepository.findAllByEvent_IdAndIdIn(eventId, requestIds);
 
         if (event.getParticipantLimit() == 0 || !event.getRequestModeration()) {
+
             List<ParticipationResponseDto> participationResponseDtos = participations.stream()
                     .map(ParticipationMapper::toParticipationResponseDto)
                     .collect(Collectors.toList());
             participationResponseDtos.forEach(x -> x.setStatus(ParticipationStatus.CONFIRMED));
-
             //увеличить количество одобренных заявок
 
 
