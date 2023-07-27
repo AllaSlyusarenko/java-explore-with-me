@@ -86,12 +86,14 @@ public class EventPrivateController {
     @ResponseStatus(HttpStatus.CREATED)
     public ParticipationResponseDto saveRequest(@PathVariable(name = "userId") @Positive Long userId,
                                                 @RequestParam(name = "eventId", required = false) @Positive Long eventId) {
+        log.debug("Создание запроса на событие пользователя  {} с eventId {}", userId, eventId);
         return eventService.saveRequest(userId, eventId);
     }
 
     @GetMapping("/requests") // инфа о заявках текущего пользователя в чужих событиях
     @ResponseStatus(HttpStatus.OK)
     public List<ParticipationResponseDto> getRequestByOtherUserEvents(@PathVariable(name = "userId") @Positive Long userId) {
+        log.debug("Запросы пользователя с id {} на участие в событиях", userId);
         return eventService.getRequestByOtherUserEvents(userId);
     }
 
@@ -99,7 +101,7 @@ public class EventPrivateController {
     @ResponseStatus(HttpStatus.OK)
     public ParticipationResponseDto cancelRequestByUser(@PathVariable(value = "userId") Long userId,
                                                         @PathVariable(value = "requestId") @Positive Long requestId) {
+        log.debug("Отмена пользователем с id {} на участие в событии запроса с id {}", userId, requestId);
         return eventService.cancelRequestByUser(userId, requestId);
     }
-
 }

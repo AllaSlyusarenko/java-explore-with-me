@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
-
 @RestControllerAdvice(basePackages = "ru.practicum.ewm")
 @Slf4j
 public class ErrorHandler {

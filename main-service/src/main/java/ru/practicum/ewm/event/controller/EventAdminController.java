@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.ewm.event.dto.EventFullDto;
 import ru.practicum.ewm.event.dto.EventState;
 import ru.practicum.ewm.event.dto.UpdateEventAdminRequest;
-import ru.practicum.ewm.event.repository.EventFilter;
 import ru.practicum.ewm.event.service.EventService;
 
 import javax.validation.constraints.Positive;
@@ -38,7 +37,6 @@ public class EventAdminController {
                                                 @RequestParam(name = "from", defaultValue = "0") @PositiveOrZero Integer from,
                                                 @RequestParam(name = "size", defaultValue = "10") @Positive Integer size) {
         log.debug("Получение событий для: {}, {},{},{},{}", users, states, categories, rangeStart, rangeEnd);
-        EventFilter filter = new EventFilter(users, states, categories, rangeStart, rangeEnd, from, size);
         return eventService.getAllEventsAdmin(users, states, categories, rangeStart, rangeEnd, from, size);
     }
 

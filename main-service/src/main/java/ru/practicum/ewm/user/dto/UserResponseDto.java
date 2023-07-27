@@ -7,8 +7,6 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder(toBuilder = true)
-//@ToString
-//@EqualsAndHashCode
 public class UserResponseDto {
     private Long id;
     private String email;

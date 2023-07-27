@@ -26,16 +26,19 @@ public class CategoryAdminController {
         log.debug("Создание категории: {}", categoryRequestDto);
         return categoryService.saveCategory(categoryRequestDto);
     }
+
     @DeleteMapping("/{catId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteCategoryById(@PathVariable(value = "catId") Long catId) {
+        log.debug("Удаление категории с id: {}", catId);
         categoryService.deleteCategoryById(catId);
     }
 
     @PatchMapping("/{catId}")
     @ResponseStatus(HttpStatus.OK)
     public CategoryResponseDto updateCategoryById(@PathVariable(value = "catId") Long catId,
-                                   @Valid @RequestBody CategoryRequestDto categoryRequestDto) {
+                                                  @Valid @RequestBody CategoryRequestDto categoryRequestDto) {
+        log.debug("Изменение категории с id: {}", catId);
         return categoryService.updateCategoryById(catId, categoryRequestDto);
     }
 }

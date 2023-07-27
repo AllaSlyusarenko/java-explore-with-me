@@ -36,12 +36,14 @@ public class UserAdminController {
             @RequestParam(value = "ids", required = false) List<Long> ids,
             @RequestParam(value = "from", defaultValue = "0") @PositiveOrZero Integer from,
             @RequestParam(value = "size", defaultValue = "10") @Positive Integer size) {
+        log.debug("Просмотр пользователей с id из {} ", ids);
         return userService.findAllUsers(ids, from, size);
     }
 
     @DeleteMapping("/{userId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteUserById(@PathVariable(value = "userId") Long userId) {
+        log.debug("Удаление пользователя с id {} ", userId);
         userService.deleteUserById(userId);
     }
 }

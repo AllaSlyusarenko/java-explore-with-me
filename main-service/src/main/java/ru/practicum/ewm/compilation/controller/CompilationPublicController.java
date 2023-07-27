@@ -24,12 +24,14 @@ public class CompilationPublicController {
     public List<CompilationDto> getCompilations(@RequestParam(name = "pinned", required = false) Boolean pinned,
                                                 @RequestParam(name = "from", defaultValue = "0") Integer from,
                                                 @RequestParam(name = "size", defaultValue = "10") Integer size) {
+        log.debug("Получение подборок с параметром pinned {}", pinned);
         return compilationService.getCompilations(pinned, from, size);
     }
 
     @GetMapping("/{compId}")
     @ResponseStatus(HttpStatus.OK)
     public CompilationDto getCompilationById(@PathVariable(name = "compId") Long compId) {
+        log.debug("Получение подборки с id {}", compId);
         return compilationService.getCompilationById(compId);
     }
 }

@@ -21,10 +21,8 @@ public class NewEventDto {
     @NotBlank
     @Size(min = 20, max = 7000)
     private String description;
-
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private String eventDate; //Дата и время, на которые намечено событие (в формате "yyyy-MM-dd HH:mm:ss")
-    //Обратите внимание: дата и время на которые намечено событие не может быть раньше, чем через два часа от текущего момента
     @NotNull
     private LocationDto location;
     @Nullable

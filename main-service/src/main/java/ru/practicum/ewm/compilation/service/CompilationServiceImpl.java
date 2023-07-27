@@ -30,6 +30,7 @@ public class CompilationServiceImpl implements CompilationService {
     final EventRepository eventRepository;
 
     @Override
+    @Transactional
     public CompilationDto saveCompilation(NewCompilationDto newCompilationDto) {
         if (newCompilationDto.getPinned() == null) {
             newCompilationDto.setPinned(false);
@@ -47,12 +48,14 @@ public class CompilationServiceImpl implements CompilationService {
     }
 
     @Override
+    @Transactional
     public void deleteCompilationById(Long compId) {
         Compilation compilation = compilationRepository.findById(compId).orElseThrow(() -> new NotFoundException("Подборка не найдена"));
         compilationRepository.deleteById(compId);
     }
 
     @Override
+    @Transactional
     public CompilationDto updateCompilationById(Long compId, NewCompilationDto newCompilationDto) {
         Compilation compilation = compilationRepository.findById(compId).orElseThrow(() -> new NotFoundException("Подборка не найдена"));
         if (newCompilationDto.getEvents() != null) {
@@ -82,6 +85,7 @@ public class CompilationServiceImpl implements CompilationService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public CompilationDto getCompilationById(Long compId) {
         Compilation compilation = compilationRepository.findById(compId).orElseThrow(() -> new NotFoundException("Подборка не найдена"));
         return CompilationMapper.compilationToCompilationDto(compilation);

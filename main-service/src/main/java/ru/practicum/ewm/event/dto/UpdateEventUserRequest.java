@@ -2,9 +2,7 @@ package ru.practicum.ewm.event.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
-import ru.practicum.ewm.category.model.Category;
 import ru.practicum.ewm.event.model.Location;
-import ru.practicum.ewm.user.model.User;
 
 import javax.validation.constraints.Future;
 import javax.validation.constraints.Size;
@@ -17,8 +15,7 @@ import java.time.LocalDateTime;
 @Builder(toBuilder = true)
 @ToString
 public class UpdateEventUserRequest {
-    // Если поле в запросе не указано (равно null) - значит изменение этих данных не треубется
-
+    // Если поле в запросе не указано (равно null) - значит изменение этих данных не требуется
     @Size(min = 20, max = 2000)
     private String annotation;
     private Long category;

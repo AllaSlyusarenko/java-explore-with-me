@@ -6,13 +6,13 @@ import ru.practicum.ewm.category.dto.CategoryResponseDto;
 import java.util.List;
 
 public interface CategoryService {
-    public CategoryResponseDto saveCategory(CategoryRequestDto categoryRequestDto);
+    CategoryResponseDto saveCategory(CategoryRequestDto categoryRequestDto);
 
-    public void deleteCategoryById(Long catId);
+    void deleteCategoryById(Long catId);
 
-    public CategoryResponseDto updateCategoryById(Long catId, CategoryRequestDto categoryRequestDto);
+    CategoryResponseDto updateCategoryById(Long catId, CategoryRequestDto categoryRequestDto);
 
-    public List<CategoryResponseDto> findAllCategories(Integer from, Integer size);
+    List<CategoryResponseDto> findAllCategories(Integer from, Integer size);
 
-    public CategoryResponseDto findCategoryById(Long catId);
+    CategoryResponseDto findCategoryById(Long catId);
 }

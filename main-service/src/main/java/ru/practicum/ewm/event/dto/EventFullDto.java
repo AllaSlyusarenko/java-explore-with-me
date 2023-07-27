@@ -32,5 +32,5 @@ public class EventFullDto { //Response
     private Boolean requestModeration; //Нужна ли пре-модерация заявок на участие
     private String state; //enum
     private String title; //Заголовок
-    private Integer views; //Количество просмотрев события
+    private Integer views; //Количество просмотров события
 }

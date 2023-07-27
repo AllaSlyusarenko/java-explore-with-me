@@ -4,8 +4,6 @@ import lombok.experimental.UtilityClass;
 import ru.practicum.ewm.category.dto.CategoryRequestDto;
 import ru.practicum.ewm.category.dto.CategoryResponseDto;
 import ru.practicum.ewm.category.model.Category;
-import ru.practicum.ewm.user.dto.UserResponseDto;
-import ru.practicum.ewm.user.model.User;
 
 import java.util.List;
 import java.util.stream.Collectors;

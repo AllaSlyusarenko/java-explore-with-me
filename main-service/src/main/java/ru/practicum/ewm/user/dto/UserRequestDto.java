@@ -11,8 +11,6 @@ import javax.validation.constraints.Size;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder(toBuilder = true)
-//@ToString
-//@EqualsAndHashCode
 public class UserRequestDto {
     @NotBlank
     @Email

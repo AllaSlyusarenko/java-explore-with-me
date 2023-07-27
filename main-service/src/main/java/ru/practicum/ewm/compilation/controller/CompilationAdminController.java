@@ -12,7 +12,6 @@ import ru.practicum.ewm.compilation.service.CompilationService;
 
 import javax.validation.Valid;
 
-
 @Slf4j
 @RestController
 @RequiredArgsConstructor
@@ -23,20 +22,23 @@ public class CompilationAdminController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public CompilationDto saveCompilation(@RequestBody @Valid NewCompilationDto newCompilationDto){
+    public CompilationDto saveCompilation(@RequestBody @Valid NewCompilationDto newCompilationDto) {
+        log.debug("Создание подборки");
         return compilationService.saveCompilation(newCompilationDto);
     }
 
     @DeleteMapping("/{compId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteCompilationById(@PathVariable(name = "compId") Long compId){
+    public void deleteCompilationById(@PathVariable(name = "compId") Long compId) {
+        log.debug("Удаление подборки с id: {}", compId);
         compilationService.deleteCompilationById(compId);
     }
 
     @PatchMapping("/{compId}")
     @ResponseStatus(HttpStatus.OK)
     public CompilationDto updateCompilationById(@PathVariable(name = "compId") Long compId,
-                                                 @Valid @RequestBody NewCompilationDto newCompilationDto){
+                                                @Valid @RequestBody NewCompilationDto newCompilationDto) {
+        log.debug("Изменение подборки с id: {}", compId);
         return compilationService.updateCompilationById(compId, newCompilationDto);
     }
 }

@@ -67,14 +67,6 @@ public class EventMapper {
         return eventFullDto;
     }
 
-//    public EventFullDto eventViewstoEventFullDto(Event event, Map<Long, Long> views) {
-//        return eventToEventFullDto(event, views.get(event.getId()));
-//    }
-
-//    public List<EventFullDto> eventsViewstoEventFullDto(List<Event> events, Map<Long, Long> views) {
-//        return events.stream().map(event -> eventViewstoEventFullDto(event, views)).collect(Collectors.toList());
-//    }
-
     public EventShortDto eventToEventShortDto(Event event) {
         EventShortDto eventShortDto = new EventShortDto();
         eventShortDto.setId(event.getId());

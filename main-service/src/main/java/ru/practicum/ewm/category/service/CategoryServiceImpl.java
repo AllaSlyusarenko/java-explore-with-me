@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.ewm.category.dto.CategoryRequestDto;
@@ -24,18 +23,21 @@ public class CategoryServiceImpl implements CategoryService {
     private final CategoryRepository categoryRepository;
 
     @Override
+    @Transactional
     public CategoryResponseDto saveCategory(CategoryRequestDto categoryRequestDto) {
         Category category = categoryRepository.save(CategoryMapper.categoryRequestDtoToCategory(categoryRequestDto));
         return CategoryMapper.categoryToCategoryResponseDto(category);
     }
 
     @Override
-    public void deleteCategoryById(Long catId) { //проверить привязанные события
+    @Transactional
+    public void deleteCategoryById(Long catId) {
         Category category = categoryRepository.findById(catId).orElseThrow(() -> new NotFoundException("Категория с id " + catId + " не найдена"));
         categoryRepository.deleteById(catId);
     }
 
     @Override
+    @Transactional
     public CategoryResponseDto updateCategoryById(Long catId, CategoryRequestDto categoryRequestDto) {
         Category category = categoryRepository.findById(catId).orElseThrow(() -> new NotFoundException("Категория с id " + catId + " не найдена"));
         category.setName(categoryRequestDto.getName());

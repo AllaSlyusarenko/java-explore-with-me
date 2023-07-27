@@ -6,7 +6,7 @@ import ru.practicum.ewm.request.model.Participation;
 
 @UtilityClass
 public class ParticipationMapper {
-    public ParticipationResponseDto toParticipationResponseDto (Participation participation){
+    public ParticipationResponseDto toParticipationResponseDto(Participation participation) {
         ParticipationResponseDto participationResponseDto = new ParticipationResponseDto();
         participationResponseDto.setId(participation.getId());
         participationResponseDto.setCreated(participation.getCreated());
