@@ -4,12 +4,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.ewm.category.model.Category;
 import ru.practicum.ewm.category.repository.CategoryRepository;
 import ru.practicum.ewm.client.stats.StatsClient;
 import org.springframework.data.jpa.domain.Specification;
+import ru.practicum.ewm.dto.stats.ViewStatsResponse;
 import ru.practicum.ewm.event.dto.*;
 import ru.practicum.ewm.event.mapper.EventMapper;
 import ru.practicum.ewm.event.mapper.LocationMapper;
@@ -35,6 +37,7 @@ import ru.practicum.ewm.utility.Constants;
 import javax.persistence.criteria.*;
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -52,6 +55,7 @@ public class EventServiceImpl implements EventService {
     private final LocationRepository locationRepository;
     private final RequestRepository requestRepository;
     private final StatsClient statsClient;
+    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
 //
 //    public Map<Long, Long> getViews(List<Event> events) {
@@ -269,7 +273,7 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public List<EventShortDto> getEventsWithFilter(String text, List<Long> categories, Boolean paid,
                                                    LocalDateTime rangeStart, LocalDateTime rangeEnd,
                                                    Boolean onlyAvailable, String sort, Integer from, Integer size,
@@ -280,13 +284,52 @@ public class EventServiceImpl implements EventService {
 //        - информация о каждом событии должна включать в себя количество просмотров и количество уже одобренных заявок на участие
 //        - информацию о том, что по этому эндпоинту был осуществлен и обработан запрос, нужно сохранить в сервисе статистики
 
+        if (rangeStart == null && rangeEnd == null) {
+            rangeStart = LocalDateTime.now();
+            rangeEnd = rangeStart.plusYears(100);
+        }
+        if (rangeEnd.isBefore(rangeStart)) {
+            throw new ValidationException("Окончание периода не может быть ранее начала периода");
+        }
+        LocalDateTime rangeStartNew = rangeStart;
+        LocalDateTime rangeEndNew = rangeEnd;
 
-        return null;
+        Pageable pageable = PageRequest.of(from / size, size);
+        Specification<Event> specification = (Root<Event> root, CriteriaQuery<?> query, CriteriaBuilder cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
+
+            predicates.add(cb.equal(root.get("state"), EventState.PUBLISHED));
+
+            if (text != null)
+                predicates.add(cb.or(
+                        cb.like(cb.lower(root.get("annotation")), "%" + text.toLowerCase() + "%"),
+                        cb.like(cb.lower(root.get("description")), "%" + text.toLowerCase() + "%")
+                ));
+            if (categories != null) {
+                predicates.add(root.join("category", JoinType.INNER).get("id").in(categories));
+            }
+            if (paid != null)
+                predicates.add(cb.equal(root.get("paid"), paid));
+            if (rangeStartNew != null)
+                predicates.add(cb.greaterThanOrEqualTo(root.get("eventDate"), rangeStartNew));
+            if (rangeEndNew != null)
+                predicates.add(cb.lessThanOrEqualTo(root.get("eventDate"), rangeEndNew));
+            if (onlyAvailable != null && onlyAvailable)
+                predicates.add(cb.greaterThan(root.get("participantLimit"), root.get("confirmedRequests")));
+            return cb.and(predicates.toArray(new Predicate[predicates.size()]));
+        };
+
+        List<Event> eventList = eventRepository.findAll(specification, pageable).getContent();
+
+        statsClient.saveHit(("ewm-main-service"), request.getRequestURI(), request.getRemoteAddr(),
+                LocalDateTime.now().format(Constants.formatterDate));
+ //сохранение в сервисе статистики обращения по этим ури, сохранение этого значения в event-ы, сохранить эти events
+        return eventList.stream().map(EventMapper::eventToEventShortDto).collect(Collectors.toList());
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public EventFullDto getEventById(Long id, HttpServletRequest request) {
+    @Transactional
+    public EventFullDto getEventById(Long id, HttpServletRequest httpServletRequest) {
 //        событие должно быть опубликовано
 //        информация о событии должна включать в себя количество просмотров и количество подтвержденных запросов
 //        информацию о том, что по этому эндпоинту был осуществлен и обработан запрос, нужно сохранить в сервисе статистики
@@ -294,8 +337,30 @@ public class EventServiceImpl implements EventService {
         if (event == null) {
             throw new NotFoundException("Событие не найдено");
         }
+        Integer viewsBeforeRequest = countUniqueViews(httpServletRequest);
 
-        return null;
+        statsClient.saveHit("ewm-main-service", httpServletRequest.getRequestURI(),
+                httpServletRequest.getRemoteAddr(), LocalDateTime.now().format(Constants.formatterDate));
+
+        Integer viewsAfterRequest = countUniqueViews(httpServletRequest);
+        event.setViews(viewsAfterRequest);
+        eventRepository.save(event);
+        return EventMapper.eventToEventFullDto(event);
+    }
+
+    private Integer countUniqueViews(HttpServletRequest httpServletRequest) {
+        List<String> uris = new ArrayList<>(Collections.singleton(httpServletRequest.getRequestURI()));
+
+        ResponseEntity<Object> response = statsClient.getStats(
+                LocalDateTime.now().minusYears(100),
+                LocalDateTime.now(),
+                uris, true);
+        List<ViewStatsResponse> result = (List<ViewStatsResponse>) response.getBody();
+        if (result != null) {
+            return result.size();
+        } else {
+            return 0;
+        }
     }
 
     @Override
@@ -458,7 +523,7 @@ public class EventServiceImpl implements EventService {
         };
 
         List<Event> eventList = eventRepository.findAll(specification, pageable).getContent();
-        return eventList.stream().map(EventMapper::eventToEventFullDto).collect(Collectors.toList());//views доделать
+        return eventList.stream().map(EventMapper::eventToEventFullDto).collect(Collectors.toList());
     }
 
 
@@ -473,45 +538,4 @@ public class EventServiceImpl implements EventService {
             throw new ConflictException(("Инициатор и участник - одно лицо"));
         }
     }
-
-    private void checkQEvent() {
-        QEvent qEvent = QEvent.event;
-    }
-
-//    private List<Request> findConfirmedRequests(Event event) {
-//        return requestRepository.findConfirmedRequests(event.getId());
-//    }
-//
-//    private Map<Event, List<Request>> findConfirmedRequests(List<Event> events) {
-//        List<Request> confirmedRequests =
-//                requestRepository.findConfirmedRequests(events.stream().map(Event::getId).collect(Collectors.toList()));
-//
-//        return confirmedRequests.stream()
-//                .collect(Collectors.groupingBy(Request::getEvent, Collectors.toList()));
-//    }
-
-//    private Map<Long, Integer> findViews(List<Event> events) {
-//        return statsToStatsMap(
-//                statsClient.getStats(events.stream().map(Event::getId).collect(Collectors.toList()))
-//        );
-//    }
-//
-//    private Map<Long, Integer> findViews(Set<Event> events) {
-//        return statsToStatsMap(
-//                statsClient.getStats(events.stream().map(Event::getId).collect(Collectors.toList()))
-//        );
-//    }
-//
-//    private Map<Long, Integer> findViews(Long eventId) {
-//        return statsToStatsMap(
-//                statsClient.getStats(List.of(eventId))
-//        );
-//    }
-//
-//    public static Map<Long, Long> statsToStatsMap(List<ViewStatsResponse> stats) {
-//        return stats.stream()
-//                .collect(
-//                        toMap(stat -> Long.valueOf(stat.getUri().substring(8)), ViewStatsResponse::getHits)
-//                );
-//    }
 }
