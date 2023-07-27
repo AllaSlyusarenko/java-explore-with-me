@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.ewm.dto.stats.EndpointHit;
 import ru.practicum.ewm.dto.stats.ViewStatsResponse;
+import ru.practicum.ewm.stats.exception.ValidationException;
 import ru.practicum.ewm.stats.mapper.Mapper;
 import ru.practicum.ewm.stats.repository.StatsRepository;
 
@@ -27,6 +28,9 @@ public class StatsServiceImpl implements StatsService {
 
     @Override
     public List<ViewStatsResponse> getViews(LocalDateTime start, LocalDateTime end, List<String> uris, Boolean unique) {
+        if(start.isAfter(end)){
+            throw new ValidationException("Start не может быть после end");
+        }
         if (uris == null || uris.isEmpty()) {
             if (unique) {
                 log.info("Cтатистика запросов по uris ={} для уникальных ip", uris);
