@@ -28,7 +28,7 @@ public class StatsServiceImpl implements StatsService {
 
     @Override
     public List<ViewStatsResponse> getViews(LocalDateTime start, LocalDateTime end, List<String> uris, Boolean unique) {
-        if(start.isAfter(end)){
+        if (start.isAfter(end) || start.isEqual(end)) {
             throw new ValidationException("Start не может быть после end");
         }
         if (uris == null || uris.isEmpty()) {
