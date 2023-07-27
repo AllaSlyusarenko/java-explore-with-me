@@ -22,6 +22,7 @@ public class CategoryMapper {
         categoryResponseDto.setName(category.getName());
         return categoryResponseDto;
     }
+
     public List<CategoryResponseDto> categoriesToCategoryResponseDtos(List<Category> categories) {
         return categories.stream().map(x -> categoryToCategoryResponseDto(x)).collect(Collectors.toList());
     }
