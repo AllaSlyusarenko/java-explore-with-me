@@ -14,7 +14,6 @@ import ru.practicum.ewm.stats.service.StatsService;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-import java.time.DateTimeException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
