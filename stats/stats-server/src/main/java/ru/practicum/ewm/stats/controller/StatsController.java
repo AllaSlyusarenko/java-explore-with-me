@@ -34,8 +34,8 @@ public class StatsController {
     }
 
     @GetMapping("/stats")
-    public ResponseEntity<List<ViewStatsResponse>> getStats(@RequestParam String start,
-                                                            @RequestParam String end,
+    public ResponseEntity<List<ViewStatsResponse>> getStats(@RequestParam(name = "start", required = false) String start,
+                                                            @RequestParam(name = "end", required = false) String end,
                                                             @RequestParam(required = false) List<String> uris,
                                                             @RequestParam(defaultValue = "false") Boolean unique) {
         log.info("Получение данных для статистики по параметрам: start = {}, end = {}, uris = {}, unique = {}",
