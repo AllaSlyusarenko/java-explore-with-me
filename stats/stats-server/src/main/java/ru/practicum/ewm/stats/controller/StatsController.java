@@ -13,6 +13,7 @@ import ru.practicum.ewm.stats.exception.ValidationException;
 import ru.practicum.ewm.stats.service.StatsService;
 
 import javax.validation.Valid;
+import java.time.DateTimeException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -45,12 +46,12 @@ public class StatsController {
         if (start == null || end == null) {
             throw new ValidationException("Неверные даты начала или конца периода");
         }
-//        try {
-        startDate = LocalDateTime.parse(start, formatter);
-        endDate = LocalDateTime.parse(end, formatter);
-//        } catch (DateTimeException exception) {
-//            return ResponseEntity.badRequest().build();
-//        }
+        try {
+            startDate = LocalDateTime.parse(start, formatter);
+            endDate = LocalDateTime.parse(end, formatter);
+        } catch (DateTimeException exception) {
+            return ResponseEntity.badRequest().build();
+        }
         List<ViewStatsResponse> results = statsService.getViews(startDate, endDate, uris, unique);
         return ResponseEntity.ok(results);
     }
