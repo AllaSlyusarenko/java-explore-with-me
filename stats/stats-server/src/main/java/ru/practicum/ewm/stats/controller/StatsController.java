@@ -48,8 +48,8 @@ public class StatsController {
             throw new ValidationException("Неверные даты начала или конца периода");
         }
 //        try {
-            startDate = LocalDateTime.parse(start, formatter);
-            endDate = LocalDateTime.parse(end, formatter);
+        startDate = LocalDateTime.parse(start, formatter);
+        endDate = LocalDateTime.parse(end, formatter);
 //        } catch (DateTimeException exception) {
 //            return ResponseEntity.badRequest().build();
 //        }
