@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.ewm.compilation.dto.CompilationDto;
 import ru.practicum.ewm.compilation.dto.NewCompilationDto;
+import ru.practicum.ewm.compilation.dto.UpdateCompilationDto;
 import ru.practicum.ewm.compilation.mapper.CompilationMapper;
 import ru.practicum.ewm.compilation.model.Compilation;
 import ru.practicum.ewm.compilation.repository.CompilationRepository;
@@ -30,14 +31,7 @@ public class CompilationServiceImpl implements CompilationService {
     final EventRepository eventRepository;
 
     @Override
-    @Transactional
     public CompilationDto saveCompilation(NewCompilationDto newCompilationDto) {
-        if (newCompilationDto.getPinned() == null) {
-            newCompilationDto.setPinned(false);
-        }
-        if (newCompilationDto.getTitle() == null || newCompilationDto.getTitle().isBlank()) {
-            throw new ValidationException("Поле title является обязательным для заполнения");
-        }
         List<Event> eventsEntities = new ArrayList<>();
         if (newCompilationDto.getEvents() != null) {
             eventsEntities.addAll(listLongToListEvent(newCompilationDto.getEvents()));
@@ -48,24 +42,22 @@ public class CompilationServiceImpl implements CompilationService {
     }
 
     @Override
-    @Transactional
     public void deleteCompilationById(Long compId) {
         Compilation compilation = compilationRepository.findById(compId).orElseThrow(() -> new NotFoundException("Подборка не найдена"));
         compilationRepository.deleteById(compId);
     }
 
     @Override
-    @Transactional
-    public CompilationDto updateCompilationById(Long compId, NewCompilationDto newCompilationDto) {
+    public CompilationDto updateCompilationById(Long compId, UpdateCompilationDto updateCompilationDto) {
         Compilation compilation = compilationRepository.findById(compId).orElseThrow(() -> new NotFoundException("Подборка не найдена"));
-        if (newCompilationDto.getEvents() != null) {
-            compilation.setEvents(listLongToListEvent(newCompilationDto.getEvents()));
+        if (updateCompilationDto.getEvents() != null) {
+            compilation.setEvents(listLongToListEvent(updateCompilationDto.getEvents()));
         }
-        if (newCompilationDto.getPinned() != null) {
-            compilation.setPinned(newCompilationDto.getPinned());
+        if (updateCompilationDto.getPinned() != null) {
+            compilation.setPinned(updateCompilationDto.getPinned());
         }
-        if (newCompilationDto.getTitle() != null) {
-            compilation.setTitle(newCompilationDto.getTitle());
+        if (updateCompilationDto.getTitle() != null) {
+            compilation.setTitle(updateCompilationDto.getTitle());
         }
         Compilation compilationSave = compilationRepository.save(compilation);
         return CompilationMapper.compilationToCompilationDto(compilationSave);

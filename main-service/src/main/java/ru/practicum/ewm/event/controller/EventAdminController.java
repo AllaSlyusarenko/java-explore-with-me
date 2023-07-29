@@ -26,7 +26,6 @@ public class EventAdminController {
     private final EventService eventService;
 
     @GetMapping // поиск событий
-    @ResponseStatus(HttpStatus.OK)
     public List<EventFullDto> getAllEventsAdmin(@RequestParam(name = "users", required = false) List<Long> users,
                                                 @RequestParam(name = "states", required = false) EventState states,
                                                 @RequestParam(name = "categories", required = false) List<Long> categories,
@@ -41,7 +40,6 @@ public class EventAdminController {
     }
 
     @PatchMapping("/{eventId}") // редактирование данных события и его статуса(отклонение/публикация)
-    @ResponseStatus(HttpStatus.OK)
     public EventFullDto updateEventAdmin(@PathVariable(name = "eventId") Long eventId,
                                          @Validated @RequestBody UpdateEventAdminRequest updateEventAdminRequest) {
         log.debug("Изменение события администратором для: {}", eventId);

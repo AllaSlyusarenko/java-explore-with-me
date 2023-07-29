@@ -26,7 +26,6 @@ public class EventPublicController {
     private final EventService eventService;
 
     @GetMapping() // получение событий с возможностью фильтрации
-    @ResponseStatus(HttpStatus.OK)
     public List<EventShortDto> getEventsWithFilter(@RequestParam(name = "text", required = false) String text,
                                                    @RequestParam(name = "categories", required = false) List<Long> categories,
                                                    @RequestParam(name = "paid", required = false) Boolean paid,
@@ -45,7 +44,6 @@ public class EventPublicController {
     }
 
     @GetMapping("/{id}")
-    @ResponseStatus(HttpStatus.OK)
     public EventFullDto getEventById(@PathVariable(name = "id") Long id,
                                      HttpServletRequest httpServletRequest) {
         log.debug("Получение события по id: {}", id);

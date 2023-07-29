@@ -31,7 +31,6 @@ public class UserAdminController {
     }
 
     @GetMapping
-    @ResponseStatus(HttpStatus.OK)
     public List<UserResponseDto> findAllUsers(
             @RequestParam(value = "ids", required = false) List<Long> ids,
             @RequestParam(value = "from", defaultValue = "0") @PositiveOrZero Integer from,

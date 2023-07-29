@@ -15,7 +15,7 @@ public class CompilationMapper {
     public Compilation newCompilationDtoToCompilation(NewCompilationDto newCompilationDto, List<Event> eventsEntities) {
         Compilation compilation = new Compilation();
         compilation.setEvents(eventsEntities);
-        compilation.setPinned(newCompilationDto.getPinned());
+        compilation.setPinned(newCompilationDto.isPinned());
         compilation.setTitle(newCompilationDto.getTitle());
         return compilation;
     }

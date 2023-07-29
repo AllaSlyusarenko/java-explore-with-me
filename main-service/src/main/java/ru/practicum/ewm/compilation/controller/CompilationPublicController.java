@@ -20,7 +20,6 @@ public class CompilationPublicController {
     private final CompilationService compilationService;
 
     @GetMapping
-    @ResponseStatus(HttpStatus.OK)
     public List<CompilationDto> getCompilations(@RequestParam(name = "pinned", required = false) Boolean pinned,
                                                 @RequestParam(name = "from", defaultValue = "0") Integer from,
                                                 @RequestParam(name = "size", defaultValue = "10") Integer size) {
@@ -29,7 +28,6 @@ public class CompilationPublicController {
     }
 
     @GetMapping("/{compId}")
-    @ResponseStatus(HttpStatus.OK)
     public CompilationDto getCompilationById(@PathVariable(name = "compId") Long compId) {
         log.debug("Получение подборки с id {}", compId);
         return compilationService.getCompilationById(compId);

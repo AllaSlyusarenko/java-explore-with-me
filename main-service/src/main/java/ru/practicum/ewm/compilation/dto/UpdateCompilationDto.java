@@ -2,9 +2,7 @@ package ru.practicum.ewm.compilation.dto;
 
 import lombok.*;
 
-import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
-
 import java.util.List;
 
 @Getter
@@ -12,10 +10,9 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder(toBuilder = true)
-public class NewCompilationDto {
+public class UpdateCompilationDto {
     private List<Long> events;
-    private boolean pinned;
+    private Boolean pinned;
     @Size(min = 1, max = 50)
-    @NotBlank
     private String title;
 }

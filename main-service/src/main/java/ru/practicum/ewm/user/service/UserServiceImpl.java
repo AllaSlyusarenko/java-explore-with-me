@@ -24,7 +24,6 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
 
     @Override
-    @Transactional
     public UserResponseDto saveUser(UserRequestDto userRequestDto) {
         User user = userRepository.save(UserMapper.requestDtoToUser(userRequestDto));
         return UserMapper.userToUserResponseDto(user);
@@ -44,7 +43,6 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @Transactional
     public void deleteUserById(Long userId) {
         User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("Пользователь с id " + userId + " не найден"));
         userRepository.deleteById(userId);

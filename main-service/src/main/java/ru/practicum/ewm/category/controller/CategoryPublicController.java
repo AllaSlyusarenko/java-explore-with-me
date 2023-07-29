@@ -22,7 +22,6 @@ public class CategoryPublicController {
     private final CategoryService categoryService;
 
     @GetMapping
-    @ResponseStatus(HttpStatus.OK)
     public List<CategoryResponseDto> findAllCategories(
             @RequestParam(value = "from", defaultValue = "0") @PositiveOrZero Integer from,
             @RequestParam(value = "size", defaultValue = "10") @Positive Integer size) {
@@ -31,7 +30,6 @@ public class CategoryPublicController {
     }
 
     @GetMapping("/{catId}")
-    @ResponseStatus(HttpStatus.OK)
     public CategoryResponseDto findCategoryById(@PathVariable(value = "catId") Long catId) {
         log.debug("Просмотр категорий c id: {}", catId);
         return categoryService.findCategoryById(catId);
