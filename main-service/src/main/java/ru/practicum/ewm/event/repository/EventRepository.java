@@ -3,8 +3,6 @@ package ru.practicum.ewm.event.repository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
-
-import ru.practicum.ewm.category.model.Category;
 import ru.practicum.ewm.event.dto.EventState;
 import ru.practicum.ewm.event.model.Event;
 
@@ -21,5 +19,6 @@ public interface EventRepository extends JpaRepository<Event, Long> {
     Event findByIdAndInitiator_Id(Long eventId, Long userId);
 
     Event findByIdAndState(Long eventId, EventState state);
+
     List<Event> findAllByCategory_Id(Long categoryId);
 }

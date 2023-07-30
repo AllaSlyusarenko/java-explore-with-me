@@ -191,9 +191,9 @@ public class EventServiceImpl implements EventService {
             event.setViews(resultMap.getOrDefault(event.getId(), 0));
         }
         eventRepository.saveAll(eventList);
-        return eventList.stream().
-                map(EventMapper::eventToEventShortDto).
-                collect(Collectors.toList());
+        return eventList.stream()
+                .map(EventMapper::eventToEventShortDto)
+                .collect(Collectors.toList());
     }
 
     private Map<Long, Integer> countUniqueViewsForManyUris(List<Event> eventList) {
