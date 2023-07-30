@@ -1,5 +1,7 @@
 package ru.practicum.ewm.event.service;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
@@ -53,6 +55,7 @@ public class EventServiceImpl implements EventService {
     private final LocationRepository locationRepository;
     private final RequestRepository requestRepository;
     private final StatsClient statsClient;
+    private final ObjectMapper mapper;
 
     @Override
     public EventFullDto saveEvent(Long userId, NewEventDto newEventDto) {
@@ -180,6 +183,7 @@ public class EventServiceImpl implements EventService {
                 request.getRequestURI(), //uri  get  /events
                 request.getRemoteAddr(),  //ip
                 LocalDateTime.now().format(Constants.formatterDate)); //timestamp
+
         List<Event> eventList = eventRepository.findAll(specification, pageable).getContent();
 
         Map<Long, Integer> resultMap = countUniqueViewsForManyUris(eventList);
@@ -208,15 +212,16 @@ public class EventServiceImpl implements EventService {
                 startDateForAll,
                 LocalDateTime.now(),
                 uris, true);
-        List<ViewStatsResponse> result = (List<ViewStatsResponse>) response.getBody();
-        Map<Long, Integer> resultMap = new HashMap<>();
-        for (ViewStatsResponse vsr : result) {
-            resultMap.put(Long.parseLong(vsr.getUri().replaceFirst("/events/", "")), Math.toIntExact(vsr.getHits()));
-        }
 
-        result.stream()
-                .collect(Collectors.toMap(vsr -> Long.parseLong(vsr.getUri().replaceFirst("/events/", "")),
-                        ViewStatsResponse::getHits));
+        Map<Long, Integer> resultMap = new HashMap<>();
+        if (response.hasBody() && response.getStatusCode().is2xxSuccessful()) {
+            List<ViewStatsResponse> resultList = mapper.convertValue(response.getBody(), new TypeReference<>() {
+            });
+            for (ViewStatsResponse vsr : resultList) {
+                String index = vsr.getUri().substring(8);
+                resultMap.put(Long.parseLong(index), Math.toIntExact(vsr.getHits()));
+            }
+        }
         return resultMap;
     }
 
@@ -230,7 +235,6 @@ public class EventServiceImpl implements EventService {
                 httpServletRequest.getRequestURI(),  // uri   get  /events/{eventId}
                 httpServletRequest.getRemoteAddr(), //ip
                 LocalDateTime.now().format(Constants.formatterDate)); //timestamp
-
         Integer viewsAfterRequest = countUniqueViewsForOneUri(httpServletRequest, event.getPublishedOn());
         event.setViews(viewsAfterRequest);
         eventRepository.save(event);
@@ -239,13 +243,13 @@ public class EventServiceImpl implements EventService {
 
     private Integer countUniqueViewsForOneUri(HttpServletRequest httpServletRequest, LocalDateTime publishedOn) {
         List<String> uris = new ArrayList<>(Collections.singleton(httpServletRequest.getRequestURI()));
-
         ResponseEntity<Object> response = statsClient.getStats(
                 publishedOn.minusMinutes(1L),
                 LocalDateTime.now(),
                 uris, true);
-        List<ViewStatsResponse> result = (List<ViewStatsResponse>) response.getBody();
-        if (result != null) {
+        if (response.hasBody() && response.getStatusCode().is2xxSuccessful()) {
+            List<ViewStatsResponse> result = mapper.convertValue(response.getBody(), new TypeReference<>() {
+            });
             return Math.toIntExact(result.get(0).getHits());
         } else {
             return 0;
