@@ -38,8 +38,7 @@ participant_limit  INTEGER DEFAULT 0,
 published_on       TIMESTAMP  WITHOUT TIME ZONE,
 request_moderation BOOLEAN DEFAULT TRUE,
 state              VARCHAR(25) NOT NULL,
-title              VARCHAR(120) NOT NULL,
-views              INTEGER DEFAULT 0
+title              VARCHAR(120) NOT NULL
 );
 
 create TABLE IF NOT EXISTS requests(

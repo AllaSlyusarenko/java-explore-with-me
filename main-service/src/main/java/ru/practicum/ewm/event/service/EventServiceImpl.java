@@ -138,6 +138,7 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<EventShortDto> getEventsWithFilter(String text, List<Long> categories, Boolean paid,
                                                    LocalDateTime rangeStart, LocalDateTime rangeEnd,
                                                    Boolean onlyAvailable, String sort, Integer from, Integer size,
@@ -151,11 +152,10 @@ public class EventServiceImpl implements EventService {
         }
         LocalDateTime rangeStartNew = rangeStart;
         LocalDateTime rangeEndNew = rangeEnd;
-
-        Pageable pageable = PageRequest.of(from / size, size, Sort.by(Sort.Direction.DESC, "eventDate"));
-        if (sort.equals("VIEWS")) {
-            pageable = PageRequest.of(from / size, size, Sort.by(Sort.Direction.DESC, "views"));
-        }
+        statsClient.saveHit(("ewm-main-service"), //app
+                request.getRequestURI(), //uri  get  /events
+                request.getRemoteAddr(),  //ip
+                LocalDateTime.now().format(Constants.formatterDate)); //timestamp
         Specification<Event> specification = (Root<Event> root, CriteriaQuery<?> query, CriteriaBuilder cb) -> {
             List<Predicate> predicates = new ArrayList<>();
 
@@ -179,21 +179,21 @@ public class EventServiceImpl implements EventService {
                 predicates.add(cb.greaterThan(root.get("participantLimit"), root.get("confirmedRequests")));
             return cb.and(predicates.toArray(new Predicate[predicates.size()]));
         };
-        statsClient.saveHit(("ewm-main-service"), //app
-                request.getRequestURI(), //uri  get  /events
-                request.getRemoteAddr(),  //ip
-                LocalDateTime.now().format(Constants.formatterDate)); //timestamp
-
-        List<Event> eventList = eventRepository.findAll(specification, pageable).getContent();
-
-        Map<Long, Integer> resultMap = countUniqueViewsForManyUris(eventList);
-        for (Event event : eventList) {
-            event.setViews(resultMap.getOrDefault(event.getId(), 0));
+        List<Event> eventList;
+        if (sort.equals("EVENT_DATE")) {
+            eventList = eventRepository.findAll(specification,
+                    PageRequest.of(from / size, size, Sort.by(Sort.Direction.DESC, "eventDate"))).getContent();
+        } else {
+            eventList = eventRepository.findAll(specification,
+                    PageRequest.of(from / size, size)).getContent();
         }
-        eventRepository.saveAll(eventList);
-        return eventList.stream()
-                .map(EventMapper::eventToEventShortDto)
-                .collect(Collectors.toList());
+        List<EventShortDto> eventShortDtos = EventMapper.eventsToEventShortDto(eventList);
+        Map<Long, Integer> resultMap = countUniqueViewsForManyUris(eventList);
+        eventShortDtos.forEach(eventShortDto -> eventShortDto.setViews(resultMap.getOrDefault(eventShortDto.getId(), 0)));
+        if (sort.equals("VIEWS")) {
+            return eventShortDtos.stream().sorted(Comparator.comparing(EventShortDto::getViews).reversed()).collect(Collectors.toList());
+        }
+        return eventShortDtos;
     }
 
     private Map<Long, Integer> countUniqueViewsForManyUris(List<Event> eventList) {
@@ -226,6 +226,7 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public EventFullDto getEventById(Long id, HttpServletRequest httpServletRequest) {
         Event event = eventRepository.findByIdAndState(id, EventState.PUBLISHED);
         if (event == null) {
@@ -236,9 +237,9 @@ public class EventServiceImpl implements EventService {
                 httpServletRequest.getRemoteAddr(), //ip
                 LocalDateTime.now().format(Constants.formatterDate)); //timestamp
         Integer viewsAfterRequest = countUniqueViewsForOneUri(httpServletRequest, event.getPublishedOn());
-        event.setViews(viewsAfterRequest);
-        eventRepository.save(event);
-        return EventMapper.eventToEventFullDto(event);
+        EventFullDto eventFullDto = EventMapper.eventToEventFullDto(event);
+        eventFullDto.setViews(viewsAfterRequest);
+        return eventFullDto;
     }
 
     private Integer countUniqueViewsForOneUri(HttpServletRequest httpServletRequest, LocalDateTime publishedOn) {
@@ -408,7 +409,6 @@ public class EventServiceImpl implements EventService {
 
             return cb.and(predicates.toArray(new Predicate[predicates.size()]));
         };
-
         List<Event> eventList = eventRepository.findAll(specification, pageable).getContent();
         return eventList.stream().map(EventMapper::eventToEventFullDto).collect(Collectors.toList());
     }

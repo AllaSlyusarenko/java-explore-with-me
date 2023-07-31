@@ -72,6 +72,4 @@ public class Event {
 
     @JoinColumn(name = "title")
     private String title; //Заголовок
-
-    private Integer views;
 }
