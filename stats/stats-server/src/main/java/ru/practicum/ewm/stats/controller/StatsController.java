@@ -9,10 +9,10 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.ewm.dto.stats.EndpointHit;
 import ru.practicum.ewm.dto.stats.ViewStatsResponse;
+import ru.practicum.ewm.stats.exception.ValidationException;
 import ru.practicum.ewm.stats.service.StatsService;
 
 import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 import java.time.DateTimeException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -35,14 +35,17 @@ public class StatsController {
     }
 
     @GetMapping("/stats")
-    public ResponseEntity<List<ViewStatsResponse>> getStats(@RequestParam @NotNull String start,
-                                                            @RequestParam @NotNull String end,
+    public ResponseEntity<List<ViewStatsResponse>> getStats(@RequestParam(name = "start", required = false) String start,
+                                                            @RequestParam(name = "end", required = false) String end,
                                                             @RequestParam(required = false) List<String> uris,
                                                             @RequestParam(defaultValue = "false") Boolean unique) {
         log.info("Получение данных для статистики по параметрам: start = {}, end = {}, uris = {}, unique = {}",
                 start, end, uris, unique);
         LocalDateTime startDate;
         LocalDateTime endDate;
+        if (start == null || end == null) {
+            throw new ValidationException("Неверные даты начала или конца периода");
+        }
         try {
             startDate = LocalDateTime.parse(start, formatter);
             endDate = LocalDateTime.parse(end, formatter);
