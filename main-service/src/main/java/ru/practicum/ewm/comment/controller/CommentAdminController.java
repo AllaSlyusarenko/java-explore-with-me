@@ -1,0 +1,34 @@
+package ru.practicum.ewm.comment.controller;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+import ru.practicum.ewm.comment.dto.CommentResponseDto;
+import ru.practicum.ewm.comment.model.CommentStatus;
+import ru.practicum.ewm.comment.service.CommentService;
+
+import javax.validation.constraints.NotBlank;
+
+@Slf4j
+@RestController
+@RequiredArgsConstructor
+@Validated
+@RequestMapping(path = "/admin/comment", produces = MediaType.APPLICATION_JSON_VALUE)
+public class CommentAdminController {
+    private final CommentService commentService;
+
+    @PatchMapping("/{commId}")
+    public CommentResponseDto changeStatus(@PathVariable(name = "eventId") Long commId,
+                                           @RequestParam(name = "status") @NotBlank String status) {
+        log.debug("Изменение статуса комментария {}", commId);
+        return commentService.changeStatus(commId, status);
+    }
+
+    @DeleteMapping("/{userId}")
+    public void deleteAllUserComment(@PathVariable(name = "userId") Long userId) {
+        log.debug("Удаление всех комментариев пользователя {}", userId);
+        commentService.deleteAllUserComment(userId);
+    }
+}
