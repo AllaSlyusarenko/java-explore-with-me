@@ -24,9 +24,8 @@ public class Like {
     @JoinColumn(name = "comment")
     private Comment comment;
 
-    @NonNull
-    @JoinColumn(name = "is_like")
-    private Boolean isLike; // true - like, false - dislike
+    @JoinColumn(name = "positive")
+    private boolean positive; // true - like, false - dislike
 
     @OneToOne
     @JoinColumn(name = "liker")
@@ -34,4 +33,7 @@ public class Like {
 
     @JoinColumn(name = "created")
     private LocalDateTime created;
+
+    @JoinColumn(name = "edit_time")
+    private LocalDateTime editTime;
 }

@@ -19,5 +19,11 @@ public interface CommentService {
 
     CommentResponseDto changeStatus(Long commId, String status);
 
-    void deleteAllUserComment(Long userId);
+    List<CommentResponseDto> deleteAllUserComment(Long userId);
+
+    CommentResponseDto deleteCommentByIdAdmin(Long commId);
+
+    List<CommentResponseDto> getAllComments(Integer from, Integer size);
+
+    List<CommentResponseDto> getAllCommentsByEvent(Long eventId, Integer from, Integer size);
 }

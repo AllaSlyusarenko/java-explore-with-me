@@ -24,7 +24,7 @@ import java.util.List;
 public class CommentPrivateController {
     private final CommentService commentService;
 
-    @PostMapping("/{eventId}") //добавление нового комментария
+    @PostMapping("/{eventId}") //добавление нового комментария, статус PENDING
     @ResponseStatus(HttpStatus.CREATED)
     public CommentResponseDto saveComment(@PathVariable(name = "userId") Long userId,
                                           @PathVariable(name = "eventId") Long eventId,
@@ -33,7 +33,7 @@ public class CommentPrivateController {
         return commentService.saveComment(userId, eventId, newCommentDto);
     }
 
-    @GetMapping //все комментарии пользователя
+    @GetMapping //все комментарии пользователя со статусами  PENDING, CANCELED, PUBLISHED
     public List<CommentResponseDto> getAllUserComments(@PathVariable(name = "userId") Long userId,
                                                        @RequestParam(name = "from", defaultValue = "0") @PositiveOrZero Integer from,
                                                        @RequestParam(name = "size", defaultValue = "10") @Positive Integer size) {
@@ -41,15 +41,15 @@ public class CommentPrivateController {
         return commentService.getAllUserComments(userId, from, size);
     }
 
-    @DeleteMapping("/{commId}") // комментарий не удаляется, но переходит в статус, при котором комментарий не виден
-    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @DeleteMapping("/{commId}")
+    // комментарий не удаляется, но переходит в статус CANCELED, при котором комментарий виден только его автору, изменить комментарий уже нельзя
     public void deleteCommentById(@PathVariable(name = "userId") Long userId,
                                   @PathVariable(name = "eventId") Long commId) {
         log.debug("Удаление видимости для комментария {}", commId);
         commentService.deleteCommentById(userId, commId);
     }
 
-    @PatchMapping("/{commId}")
+    @PatchMapping("/{commId}") // после изменения статус снова PENDING, менять можно комментарии со статусами PENDING, PUBLISHED
     public CommentResponseDto updateCommentById(@PathVariable(name = "userId") Long userId,
                                                 @PathVariable(name = "eventId") Long commId,
                                                 @Valid @RequestBody UpdateCommentDto updateCommentDto) {
@@ -57,7 +57,7 @@ public class CommentPrivateController {
         return commentService.updateCommentById(userId, commId, updateCommentDto);
     }
 
-    @GetMapping("/{commId}")
+    @GetMapping("/{commId}") //найдется любой, кроме того, у которого статус REJECTED
     public CommentResponseDto getCommentById(@PathVariable(name = "userId") Long userId,
                                              @PathVariable(name = "commId") Long commId) {
         log.debug("Просмотр комментария по id {}", commId);

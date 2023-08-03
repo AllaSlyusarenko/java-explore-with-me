@@ -14,6 +14,7 @@ import ru.practicum.ewm.comment.mapper.CommentMapper;
 import ru.practicum.ewm.comment.model.Comment;
 import ru.practicum.ewm.comment.model.CommentStatus;
 import ru.practicum.ewm.comment.repository.CommentRepository;
+import ru.practicum.ewm.event.dto.EventState;
 import ru.practicum.ewm.event.model.Event;
 import ru.practicum.ewm.event.repository.EventRepository;
 import ru.practicum.ewm.exception.ConflictException;
@@ -23,7 +24,6 @@ import ru.practicum.ewm.user.repository.UserRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -38,6 +38,9 @@ public class CommentServiceImpl implements CommentService {
     public CommentResponseDto saveComment(Long userId, Long eventId, NewCommentDto newCommentDto) {
         User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("Пользователь не найден"));
         Event event = eventRepository.findById(eventId).orElseThrow(() -> new NotFoundException("Событие не найдено"));
+        if (event.getState() != EventState.PUBLISHED) {
+            throw new ConflictException("Комментарии можно оставлять только опубликованным событиям");
+        }
         LocalDateTime created = LocalDateTime.now();
         Comment comment = CommentMapper.newCommentDtoToComment(user, event, created, newCommentDto);
         Comment commentSave = commentRepository.save(comment);
@@ -49,7 +52,7 @@ public class CommentServiceImpl implements CommentService {
     public List<CommentResponseDto> getAllUserComments(Long userId, Integer from, Integer size) { //все комменты пользователя
         User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("Пользователь не найден"));
         Pageable pageable = PageRequest.of(from / size, size, Sort.by(Sort.Direction.DESC, "created"));
-        List<Comment> comments = commentRepository.findAllByAuthor_Id(userId, pageable);
+        List<Comment> comments = commentRepository.findAllByAuthor_IdAndStatusNot(userId, CommentStatus.REJECTED, pageable);
         return CommentMapper.commentsToDtos(comments);
     }
 
@@ -61,15 +64,16 @@ public class CommentServiceImpl implements CommentService {
         }
         comment.setStatus(CommentStatus.CANCELED);// статус - отменен, изменению не подлежит
         commentRepository.save(comment);
-        //удалить также лайки этого комментария
     }
 
     @Override
     public CommentResponseDto updateCommentById(Long userId, Long commId, UpdateCommentDto updateCommentDto) {
         // изменение комментария, статус опять "в ожидании" модерации админом
-        Comment comment = commentRepository.findByIdAndAuthor_Id(commId, userId);
+        //менять можно комментарии со статусами PENDING, PUBLISHED
+        List<CommentStatus> statuses = List.of(CommentStatus.PENDING, CommentStatus.PUBLISHED);
+        Comment comment = commentRepository.findByIdAndAuthor_IdAndStatusIn(commId, userId, statuses);
         if (comment == null) {
-            throw new NotFoundException("Комментарий не найден");
+            throw new NotFoundException("Комментарий не найден или его невозможно изменить");
         }
         comment.setText(updateCommentDto.getText());
         comment.setStatus(CommentStatus.PENDING);
@@ -81,7 +85,7 @@ public class CommentServiceImpl implements CommentService {
     @Override
     @Transactional(readOnly = true)
     public CommentResponseDto getCommentById(Long userId, Long commId) { //свой коммент по id
-        Comment comment = commentRepository.findByIdAndAuthor_Id(commId, userId);
+        Comment comment = commentRepository.findByIdAndAuthor_IdAndStatusNot(commId, userId, CommentStatus.REJECTED);
         if (comment == null) {
             throw new NotFoundException("Комментарий не найден");
         }
@@ -89,7 +93,7 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public CommentResponseDto changeStatus(Long commId, String status) {
+    public CommentResponseDto changeStatus(Long commId, String status) { // публикация/отклонен
         Comment comment = commentRepository.findById(commId).orElseThrow(() -> new NotFoundException("Комментарий не найден"));
         if (comment.getStatus() != CommentStatus.PENDING) {
             throw new ConflictException("Одобрен/отклонен может быть только комментарий в состоянии ожидания");
@@ -106,10 +110,39 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public void deleteAllUserComment(Long userId) {
+    public List<CommentResponseDto> deleteAllUserComment(Long userId) { // удаление/скрытие всех комментариев пользователя
         User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("Пользователь не найден"));
-        List<Comment> comments = commentRepository.findAllByAuthor_Id(userId);
-        comments.forEach(comment -> comment.setStatus(CommentStatus.CANCELED));
-        commentRepository.saveAll(comments);
+        List<Comment> comments = commentRepository.findAllByAuthor_IdAndStatusNot(userId, CommentStatus.REJECTED);
+        comments.forEach(comment -> comment.setStatus(CommentStatus.REJECTED));
+        List<Comment> commentsSave = commentRepository.saveAll(comments);
+        return CommentMapper.commentsToDtos(commentsSave);
+    }
+
+    @Override
+    public CommentResponseDto deleteCommentByIdAdmin(Long commId) { // удаление/скрытие комментария с любым статусом
+        Comment comment = commentRepository.findById(commId).orElseThrow(() -> new NotFoundException("Комментарий не найден"));
+        comment.setStatus(CommentStatus.REJECTED);
+        Comment commentSave = commentRepository.save(comment);
+        return CommentMapper.commentToCommentResponseDto(commentSave);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<CommentResponseDto> getAllComments(Integer from, Integer size) {
+        Pageable pageable = PageRequest.of(from / size, size, Sort.by(Sort.Direction.DESC, "created"));
+        List<Comment> comments = commentRepository.findAll(pageable).getContent();
+        return CommentMapper.commentsToDtos(comments);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<CommentResponseDto> getAllCommentsByEvent(Long eventId, Integer from, Integer size) {
+        Event event = eventRepository.findById(eventId).orElseThrow(() -> new NotFoundException("Событие не найдено"));
+        if (event.getState() != EventState.PUBLISHED) {
+            throw new ConflictException("Комментарии можно оставлять только опубликованным событиям");
+        }
+        Pageable pageable = PageRequest.of(from / size, size, Sort.by(Sort.Direction.DESC, "created"));
+        List<Comment> comments = commentRepository.findAllByEvent_Id(eventId, pageable);
+        return CommentMapper.commentsToDtos(comments);
     }
 }
