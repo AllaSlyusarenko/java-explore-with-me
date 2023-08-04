@@ -34,6 +34,7 @@ services:
     container_name: ewm-main-service-container
     ports:
       - "8080:8080"
+      - "8081:8081"
     depends_on:
       - ewm-db
     environment:

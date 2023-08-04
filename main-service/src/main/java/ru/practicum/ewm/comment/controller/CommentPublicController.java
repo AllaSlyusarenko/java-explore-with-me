@@ -20,7 +20,6 @@ import java.util.List;
 public class CommentPublicController {
     private final CommentService commentService;
 
-
     @GetMapping //все комменты по дате
     public List<CommentResponseDto> getAllComments(@RequestParam(name = "from", defaultValue = "0") @PositiveOrZero Integer from,
                                                    @RequestParam(name = "size", defaultValue = "10") @Positive Integer size) {

@@ -34,7 +34,7 @@ public class CommentMapper {
         commentResponseDto.setAuthor(UserMapper.userToUserShortDto(comment.getAuthor()));
         commentResponseDto.setCreated(comment.getCreated());
         commentResponseDto.setStatus(comment.getStatus().name());
-        commentResponseDto.setEditTime(comment.getEditTime() == null ? comment.getEditTime() : null);
+        commentResponseDto.setEditTime(comment.getEditTime() != null ? comment.getEditTime() : null);
         return commentResponseDto;
     }
 

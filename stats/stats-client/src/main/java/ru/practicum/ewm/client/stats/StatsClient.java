@@ -20,7 +20,7 @@ import java.util.Map;
 public class StatsClient extends BaseClient {
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private static final String URL_SERVER = "http://stats-server:9090"; //для docker
-    //    private static final String URL_SERVER = "http://localhost:9090"; //для debug
+//  private static final String URL_SERVER = "http://localhost:9090"; //для debug
     private static final String HIT_PREFIX = "/hit";
     private static final String STATS_PREFIX = "/stats";
 

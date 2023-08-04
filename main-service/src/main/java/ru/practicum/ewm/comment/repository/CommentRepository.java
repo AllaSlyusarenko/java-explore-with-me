@@ -4,20 +4,24 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import ru.practicum.ewm.comment.model.Comment;
 import ru.practicum.ewm.comment.model.CommentStatus;
+import ru.practicum.ewm.event.model.Event;
+import ru.practicum.ewm.user.model.User;
 
 import java.util.List;
 
 public interface CommentRepository extends JpaRepository<Comment, Long> {
 
-    Comment findByIdAndAuthor_Id(Long commId, Long userId);
+    Comment findByIdAndAuthor(Long commId, User user);
 
-    Comment findByIdAndAuthor_IdAndStatusNot(Long commId, Long userId, CommentStatus status);
+    Comment findByIdAndAuthorAndStatusNot(Long commId, User user, CommentStatus status);
 
-    List<Comment> findAllByAuthor_IdAndStatusNot(Long userId, CommentStatus status, Pageable pageable);
+    List<Comment> findAllByAuthorAndStatusNot(User user, CommentStatus status, Pageable pageable);
 
-    List<Comment> findAllByAuthor_IdAndStatusNot(Long userId, CommentStatus status);
+    List<Comment> findAllByAuthorAndStatusNot(User user, CommentStatus status);
 
-    List<Comment> findAllByEvent_Id(Long eventId, Pageable pageable);
+    Comment findByIdAndAuthorAndStatusIn(Long commId, User user, List<CommentStatus> statuses);
 
-    Comment findByIdAndAuthor_IdAndStatusIn(Long commId, Long userId, List<CommentStatus> statuses);
+    List<Comment> findAllByStatus(CommentStatus status, Pageable pageable);
+
+    List<Comment> findAllByEventAndStatus(Event event, CommentStatus status, Pageable pageable);
 }

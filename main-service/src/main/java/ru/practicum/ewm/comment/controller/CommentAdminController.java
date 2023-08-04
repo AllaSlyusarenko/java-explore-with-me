@@ -33,7 +33,7 @@ public class CommentAdminController {
         return commentService.deleteAllUserComment(userId);
     }
 
-    @DeleteMapping("/{commId}") // админ отклоняет комментарий с любым статусом
+    @DeleteMapping("/comment/{commId}") // админ отклоняет комментарий с любым статусом
     public CommentResponseDto deleteCommentByIdAdmin(@PathVariable(name = "commId") Long commId) {
         log.debug("Изменение статуса комментария {}", commId);
         return commentService.deleteCommentByIdAdmin(commId);

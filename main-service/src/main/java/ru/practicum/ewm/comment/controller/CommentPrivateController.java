@@ -20,7 +20,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @Validated
-@RequestMapping(path = "/comments/{userId}", produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(path = "/private/comments/{userId}", produces = MediaType.APPLICATION_JSON_VALUE)
 public class CommentPrivateController {
     private final CommentService commentService;
 
@@ -44,14 +44,15 @@ public class CommentPrivateController {
     @DeleteMapping("/{commId}")
     // комментарий не удаляется, но переходит в статус CANCELED, при котором комментарий виден только его автору, изменить комментарий уже нельзя
     public void deleteCommentById(@PathVariable(name = "userId") Long userId,
-                                  @PathVariable(name = "eventId") Long commId) {
+                                  @PathVariable(name = "commId") Long commId) {
         log.debug("Удаление видимости для комментария {}", commId);
         commentService.deleteCommentById(userId, commId);
     }
 
-    @PatchMapping("/{commId}") // после изменения статус снова PENDING, менять можно комментарии со статусами PENDING, PUBLISHED
+    @PatchMapping("/{commId}")
+    // после изменения статус снова PENDING, менять можно комментарии со статусами PENDING, PUBLISHED
     public CommentResponseDto updateCommentById(@PathVariable(name = "userId") Long userId,
-                                                @PathVariable(name = "eventId") Long commId,
+                                                @PathVariable(name = "commId") Long commId,
                                                 @Valid @RequestBody UpdateCommentDto updateCommentDto) {
         log.debug("Изменение комментария с id: {}", commId);
         return commentService.updateCommentById(userId, commId, updateCommentDto);

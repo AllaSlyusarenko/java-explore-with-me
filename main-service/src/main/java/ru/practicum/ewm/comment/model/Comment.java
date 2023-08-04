@@ -38,6 +38,7 @@ public class Comment {
     @JsonFormat(pattern = Constants.DATE_PATTERN_FULL)
     private LocalDateTime created;
 
+    @Enumerated(EnumType.STRING)
     @JoinColumn(name = "status")
     private CommentStatus status;
 

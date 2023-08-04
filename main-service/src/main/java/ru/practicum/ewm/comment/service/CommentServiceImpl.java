@@ -52,13 +52,14 @@ public class CommentServiceImpl implements CommentService {
     public List<CommentResponseDto> getAllUserComments(Long userId, Integer from, Integer size) { //все комменты пользователя
         User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("Пользователь не найден"));
         Pageable pageable = PageRequest.of(from / size, size, Sort.by(Sort.Direction.DESC, "created"));
-        List<Comment> comments = commentRepository.findAllByAuthor_IdAndStatusNot(userId, CommentStatus.REJECTED, pageable);
+        List<Comment> comments = commentRepository.findAllByAuthorAndStatusNot(user, CommentStatus.REJECTED, pageable);
         return CommentMapper.commentsToDtos(comments);
     }
 
     @Override
     public void deleteCommentById(Long userId, Long commId) { // из базы не удаляется, меняется статус
-        Comment comment = commentRepository.findByIdAndAuthor_Id(commId, userId);
+        User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("Пользователь не найден"));
+        Comment comment = commentRepository.findByIdAndAuthor(commId, user);
         if (comment == null) {
             throw new NotFoundException("Комментарий не найден");
         }
@@ -70,8 +71,9 @@ public class CommentServiceImpl implements CommentService {
     public CommentResponseDto updateCommentById(Long userId, Long commId, UpdateCommentDto updateCommentDto) {
         // изменение комментария, статус опять "в ожидании" модерации админом
         //менять можно комментарии со статусами PENDING, PUBLISHED
+        User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("Пользователь не найден"));
         List<CommentStatus> statuses = List.of(CommentStatus.PENDING, CommentStatus.PUBLISHED);
-        Comment comment = commentRepository.findByIdAndAuthor_IdAndStatusIn(commId, userId, statuses);
+        Comment comment = commentRepository.findByIdAndAuthorAndStatusIn(commId, user, statuses);
         if (comment == null) {
             throw new NotFoundException("Комментарий не найден или его невозможно изменить");
         }
@@ -85,7 +87,8 @@ public class CommentServiceImpl implements CommentService {
     @Override
     @Transactional(readOnly = true)
     public CommentResponseDto getCommentById(Long userId, Long commId) { //свой коммент по id
-        Comment comment = commentRepository.findByIdAndAuthor_IdAndStatusNot(commId, userId, CommentStatus.REJECTED);
+        User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("Пользователь не найден"));
+        Comment comment = commentRepository.findByIdAndAuthorAndStatusNot(commId, user, CommentStatus.REJECTED);
         if (comment == null) {
             throw new NotFoundException("Комментарий не найден");
         }
@@ -112,7 +115,7 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public List<CommentResponseDto> deleteAllUserComment(Long userId) { // удаление/скрытие всех комментариев пользователя
         User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("Пользователь не найден"));
-        List<Comment> comments = commentRepository.findAllByAuthor_IdAndStatusNot(userId, CommentStatus.REJECTED);
+        List<Comment> comments = commentRepository.findAllByAuthorAndStatusNot(user, CommentStatus.REJECTED);
         comments.forEach(comment -> comment.setStatus(CommentStatus.REJECTED));
         List<Comment> commentsSave = commentRepository.saveAll(comments);
         return CommentMapper.commentsToDtos(commentsSave);
@@ -128,9 +131,9 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<CommentResponseDto> getAllComments(Integer from, Integer size) {
+    public List<CommentResponseDto> getAllComments(Integer from, Integer size) { // только опубликованные комментарии
         Pageable pageable = PageRequest.of(from / size, size, Sort.by(Sort.Direction.DESC, "created"));
-        List<Comment> comments = commentRepository.findAll(pageable).getContent();
+        List<Comment> comments = commentRepository.findAllByStatus(CommentStatus.PUBLISHED, pageable);
         return CommentMapper.commentsToDtos(comments);
     }
 
@@ -142,7 +145,7 @@ public class CommentServiceImpl implements CommentService {
             throw new ConflictException("Комментарии можно оставлять только опубликованным событиям");
         }
         Pageable pageable = PageRequest.of(from / size, size, Sort.by(Sort.Direction.DESC, "created"));
-        List<Comment> comments = commentRepository.findAllByEvent_Id(eventId, pageable);
+        List<Comment> comments = commentRepository.findAllByEventAndStatus(event, CommentStatus.PUBLISHED, pageable);
         return CommentMapper.commentsToDtos(comments);
     }
 }
