@@ -11,7 +11,7 @@ import javax.validation.constraints.Size;
 @AllArgsConstructor
 @ToString
 @Builder(toBuilder = true)
-public class NewCommentDto {
+public class CommentDto {
     @NotBlank
     @Size(max = 2000)
     private String text;

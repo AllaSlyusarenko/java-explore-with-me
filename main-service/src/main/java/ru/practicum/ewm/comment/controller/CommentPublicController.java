@@ -28,10 +28,16 @@ public class CommentPublicController {
     }
 
     @GetMapping("/{eventId}") //все комменты публичного ивента
-    public List<CommentResponseDto> getAllCommentsByEvent(@PathVariable(name = "eventId") Long eventId,
+    public List<CommentResponseDto> getAllCommentsByEvent(@PathVariable(name = "eventId") @Positive Long eventId,
                                                           @RequestParam(name = "from", defaultValue = "0") @PositiveOrZero Integer from,
                                                           @RequestParam(name = "size", defaultValue = "10") @Positive Integer size) {
         log.debug("Просмотр всех комментариев события {}", eventId);
         return commentService.getAllCommentsByEvent(eventId, from, size);
+    }
+
+    @GetMapping("/comment/{commId}") //опубликованный комментарий по id
+    public CommentResponseDto getPublicCommentById(@PathVariable(name = "commId") @Positive Long commId) {
+        log.debug("Просмотр комментария по id {}", commId);
+        return commentService.getPublicCommentById(commId);
     }
 }

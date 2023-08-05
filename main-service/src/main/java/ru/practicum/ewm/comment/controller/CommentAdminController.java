@@ -9,6 +9,7 @@ import ru.practicum.ewm.comment.dto.CommentResponseDto;
 import ru.practicum.ewm.comment.service.CommentService;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Positive;
 import java.util.List;
 
 @Slf4j
@@ -20,7 +21,7 @@ public class CommentAdminController {
     private final CommentService commentService;
 
     @PatchMapping("/{commId}") // админ публикует или отклоняет комментарий, статус должен быть PENDING
-    public CommentResponseDto changeStatus(@PathVariable(name = "commId") Long commId,
+    public CommentResponseDto changeStatus(@PathVariable(name = "commId") @Positive Long commId,
                                            @RequestParam(name = "status") @NotBlank String status) {
         log.debug("Изменение статуса комментария {}", commId);
         return commentService.changeStatus(commId, status);
@@ -28,13 +29,13 @@ public class CommentAdminController {
 
     @DeleteMapping("/{userId}")
     // если юзер забанен, админ отклоняет все комментарии, не удаляет, а переводит в статус REJECTED
-    public List<CommentResponseDto> deleteAllUserComment(@PathVariable(name = "userId") Long userId) {
+    public List<CommentResponseDto> deleteAllUserComment(@PathVariable(name = "userId") @Positive Long userId) {
         log.debug("Удаление всех комментариев пользователя {}", userId);
         return commentService.deleteAllUserComment(userId);
     }
 
     @DeleteMapping("/comment/{commId}") // админ отклоняет комментарий с любым статусом
-    public CommentResponseDto deleteCommentByIdAdmin(@PathVariable(name = "commId") Long commId) {
+    public CommentResponseDto deleteCommentByIdAdmin(@PathVariable(name = "commId") @Positive Long commId) {
         log.debug("Изменение статуса комментария {}", commId);
         return commentService.deleteCommentByIdAdmin(commId);
     }

@@ -1,8 +1,8 @@
 package ru.practicum.ewm.comment.mapper;
 
 import lombok.experimental.UtilityClass;
+import ru.practicum.ewm.comment.dto.CommentDto;
 import ru.practicum.ewm.comment.dto.CommentResponseDto;
-import ru.practicum.ewm.comment.dto.NewCommentDto;
 import ru.practicum.ewm.comment.model.Comment;
 import ru.practicum.ewm.comment.model.CommentStatus;
 import ru.practicum.ewm.event.mapper.EventMapper;
@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 
 @UtilityClass
 public class CommentMapper {
-    public Comment newCommentDtoToComment(User user, Event event, LocalDateTime created, NewCommentDto newCommentDto) {
+    public Comment newCommentDtoToComment(User user, Event event, LocalDateTime created, CommentDto newCommentDto) {
         Comment comment = new Comment();
         comment.setText(newCommentDto.getText());
         comment.setEvent(event);
@@ -33,7 +33,7 @@ public class CommentMapper {
         commentResponseDto.setEvent(EventMapper.eventToEventShortDto(comment.getEvent()));
         commentResponseDto.setAuthor(UserMapper.userToUserShortDto(comment.getAuthor()));
         commentResponseDto.setCreated(comment.getCreated());
-        commentResponseDto.setStatus(comment.getStatus().name());
+        commentResponseDto.setStatus(comment.getStatus());
         commentResponseDto.setEditTime(comment.getEditTime() != null ? comment.getEditTime() : null);
         return commentResponseDto;
     }

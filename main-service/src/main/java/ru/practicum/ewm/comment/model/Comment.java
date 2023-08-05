@@ -7,7 +7,6 @@ import ru.practicum.ewm.user.model.User;
 import ru.practicum.ewm.utility.Constants;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotBlank;
 import java.time.LocalDateTime;
 
 @Entity
@@ -22,8 +21,7 @@ public class Comment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank
-    @JoinColumn(name = "text")
+    @Column(name = "text")
     private String text;
 
     @ManyToOne

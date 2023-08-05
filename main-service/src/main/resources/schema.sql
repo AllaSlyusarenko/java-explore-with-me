@@ -68,6 +68,6 @@ text        VARCHAR(2000) NOT NULL,
 event       BIGINT REFERENCES events(id) ON delete CASCADE,
 author      BIGINT REFERENCES users(id) ON delete CASCADE,
 created     TIMESTAMP  NOT NULL,
-status      VARCHAR(255) NOT NULL,
+status      VARCHAR(25) NOT NULL,
 edit_time   TIMESTAMP
 );

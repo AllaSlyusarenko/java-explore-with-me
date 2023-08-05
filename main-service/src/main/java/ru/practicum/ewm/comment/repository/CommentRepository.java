@@ -24,4 +24,6 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     List<Comment> findAllByStatus(CommentStatus status, Pageable pageable);
 
     List<Comment> findAllByEventAndStatus(Event event, CommentStatus status, Pageable pageable);
+
+    Comment findByIdAndStatus(Long commId, CommentStatus status);
 }

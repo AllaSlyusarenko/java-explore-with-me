@@ -7,9 +7,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.ewm.comment.dto.CommentDto;
 import ru.practicum.ewm.comment.dto.CommentResponseDto;
-import ru.practicum.ewm.comment.dto.NewCommentDto;
-import ru.practicum.ewm.comment.dto.UpdateCommentDto;
 import ru.practicum.ewm.comment.mapper.CommentMapper;
 import ru.practicum.ewm.comment.model.Comment;
 import ru.practicum.ewm.comment.model.CommentStatus;
@@ -35,7 +34,7 @@ public class CommentServiceImpl implements CommentService {
     private final CommentRepository commentRepository;
 
     @Override
-    public CommentResponseDto saveComment(Long userId, Long eventId, NewCommentDto newCommentDto) {
+    public CommentResponseDto saveComment(Long userId, Long eventId, CommentDto newCommentDto) {
         User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("Пользователь не найден"));
         Event event = eventRepository.findById(eventId).orElseThrow(() -> new NotFoundException("Событие не найдено"));
         if (event.getState() != EventState.PUBLISHED) {
@@ -68,7 +67,7 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public CommentResponseDto updateCommentById(Long userId, Long commId, UpdateCommentDto updateCommentDto) {
+    public CommentResponseDto updateCommentById(Long userId, Long commId, CommentDto updateCommentDto) {
         // изменение комментария, статус опять "в ожидании" модерации админом
         //менять можно комментарии со статусами PENDING, PUBLISHED
         User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("Пользователь не найден"));
@@ -147,5 +146,15 @@ public class CommentServiceImpl implements CommentService {
         Pageable pageable = PageRequest.of(from / size, size, Sort.by(Sort.Direction.DESC, "created"));
         List<Comment> comments = commentRepository.findAllByEventAndStatus(event, CommentStatus.PUBLISHED, pageable);
         return CommentMapper.commentsToDtos(comments);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public CommentResponseDto getPublicCommentById(Long commId) {
+        Comment comment = commentRepository.findByIdAndStatus(commId, CommentStatus.PUBLISHED);
+        if (comment == null) {
+            throw new NotFoundException("Комментарий не найден");
+        }
+        return CommentMapper.commentToCommentResponseDto(comment);
     }
 }
