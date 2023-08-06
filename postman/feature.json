@@ -199,6 +199,41 @@
       "response": []
     },
     {
+      "name": "создание 400",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status 400\", function () {\r",
+              "    pm.expect(pm.response.code).to.be.oneOf([400]);\r",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/private/comments/1/1",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "private",
+            "comments",
+            "1",
+            "1"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
       "name": "Получение всех комментариев",
       "event": [
         {
@@ -277,7 +312,7 @@
         "header": [],
         "body": {
           "mode": "raw",
-          "raw": "{\r\n  \"text\": \"В лесу родилась ёлочка, в лесу она росла\"\r\n}",
+          "raw": "",
           "options": {
             "raw": {
               "language": "json"
@@ -331,7 +366,7 @@
         "header": [],
         "body": {
           "mode": "raw",
-          "raw": "{\r\n  \"text\": \"В лесу родилась ёлочка, в лесу она росла\"\r\n}",
+          "raw": "",
           "options": {
             "raw": {
               "language": "json"
@@ -355,6 +390,47 @@
             {
               "key": "status",
               "value": "REJECTED"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "изменение admin 409",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status 409\", function () {\r",
+              "    pm.expect(pm.response.code).to.be.oneOf([409]);\r",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/admin/comments/2/?status=Salut",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "admin",
+            "comments",
+            "2",
+            ""
+          ],
+          "query": [
+            {
+              "key": "status",
+              "value": "Salut"
             }
           ]
         }
@@ -439,6 +515,41 @@
             "comments",
             "1",
             "4"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "изменение  private 400",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 400\", function () {\r",
+              "    pm.expect(pm.response.code).to.be.oneOf([400]);\r",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/private/comments/1/1",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "private",
+            "comments",
+            "1",
+            "1"
           ]
         }
       },
@@ -543,6 +654,39 @@
       "response": []
     },
     {
+      "name": "комменты публичного event 409",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 409\", function () {\r",
+              "    pm.expect(pm.response.code).to.be.oneOf([409]);\r",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/comments/1",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "comments",
+            "1"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
       "name": "Получение комментария по id",
       "event": [
         {
@@ -576,6 +720,41 @@
             "comments",
             "1",
             "1"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Получение комментария по id 100 -  404",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 404\", function () {\r",
+              "    pm.expect(pm.response.code).to.be.oneOf([404]);\r",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/private/comments/1/100",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "private",
+            "comments",
+            "1",
+            "100"
           ]
         }
       },
@@ -619,6 +798,44 @@
           "path": [
             "private",
             "comments",
+            "1"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Получение публичного комментария по id",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {\r",
+              "    pm.expect(pm.response.code).to.be.oneOf([200]);\r",
+              "});\r",
+              "pm.test(\"response\", function () {\r",
+              "    pm.response.to.be.withBody;\r",
+              "    pm.response.to.be.json;\r",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/comments/comment/1",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "comments",
+            "comment",
             "1"
           ]
         }

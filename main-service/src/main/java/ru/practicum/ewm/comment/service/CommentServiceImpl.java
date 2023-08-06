@@ -36,9 +36,9 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public CommentResponseDto saveComment(Long userId, Long eventId, CommentDto newCommentDto) {
         User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("Пользователь не найден"));
-        Event event = eventRepository.findById(eventId).orElseThrow(() -> new NotFoundException("Событие не найдено"));
-        if (event.getState() != EventState.PUBLISHED) {
-            throw new ConflictException("Комментарии можно оставлять только опубликованным событиям");
+        Event event = eventRepository.findByIdAndState(eventId, EventState.PUBLISHED);
+        if (event == null) {
+            throw new NotFoundException("Событие не найдено");
         }
         LocalDateTime created = LocalDateTime.now();
         Comment comment = CommentMapper.newCommentDtoToComment(user, event, created, newCommentDto);
